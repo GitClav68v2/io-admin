@@ -1,0 +1,515 @@
+'use client'
+import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Client, CatalogItem, ProposalLineItem, LineSection } from '@/lib/types'
+import { formatCurrency, calcTotals, SECTION_LABELS, TAX_RATE } from '@/lib/utils'
+import { Plus, Trash2, ChevronDown } from 'lucide-react'
+
+interface LineItemDraft {
+  id: string
+  catalog_item_id: string | null
+  section: LineSection
+  sort_order: number
+  name: string
+  description: string
+  sku: string
+  qty: number
+  unit_label: string
+  unit_price: number
+  taxable: boolean
+  is_recurring: boolean
+  recurring_label: string
+}
+
+interface Props {
+  clients: Client[]
+  catalog: CatalogItem[]
+  proposal?: any  // for edit mode
+}
+
+const SECTIONS: LineSection[] = ['cameras', 'network', 'hardware', 'labor', 'other']
+
+function uid() { return Math.random().toString(36).slice(2) }
+
+const DEFAULT_SCOPE = `Integration One proposes to design and coordinate the installation of a complete perimeter security system for [Client Name] located at [Job Site Address]. The system will consist of [X] high-definition IP cameras covering [describe areas], connected to a centrally-managed NVR. Live monitoring will be provided via Deep Sentinel with real-time alerts and 24/7 professional response.`
+
+const DEFAULT_ASSUMPTIONS = `• Existing electrical outlets (110V) are within 10 ft of each camera mounting location.
+• Adequate internet service is available on-site (minimum 25 Mbps upload).
+• Client will designate a site contact to provide access during installation.
+• Walls and ceilings are accessible for cable routing.
+• Patching and painting after cable installation is the client's responsibility.`
+
+const DEFAULT_EXCLUSIONS = `• Permit fees (if required) — obtained by Integration One, billed at cost
+• High-voltage electrical work — by licensed electrician
+• Underground conduit trenching (unless listed in line items)
+• Painting or cosmetic finish work
+• Internet service subscription or router upgrades
+• Deep Sentinel / monitoring subscription fees (billed directly by provider)`
+
+export default function ProposalForm({ clients, catalog, proposal }: Props) {
+  const router = useRouter()
+  const supabase = createClient()
+  const isEdit = !!proposal
+
+  // ── Client & header fields ────────────────────────────────────────────────
+  const [clientId, setClientId]         = useState(proposal?.client_id ?? '')
+  const [title, setTitle]               = useState(proposal?.title ?? '')
+  const [projectName, setProjectName]   = useState(proposal?.project_name ?? '')
+  const [repName, setRepName]           = useState(proposal?.rep_name ?? '')
+  const [scopeNotes, setScopeNotes]     = useState(proposal?.scope_notes ?? DEFAULT_SCOPE)
+  const [assumptions, setAssumptions]   = useState(proposal?.assumptions ?? DEFAULT_ASSUMPTIONS)
+  const [exclusions, setExclusions]     = useState(proposal?.exclusions ?? DEFAULT_EXCLUSIONS)
+  const [monthlyNotes, setMonthlyNotes] = useState(proposal?.monthly_notes ?? '')
+  const [monthlyRecurring, setMonthlyRecurring] = useState(proposal?.monthly_recurring ?? 0)
+  const [taxRate, setTaxRate]           = useState(proposal?.tax_rate ?? TAX_RATE)
+  const [notes, setNotes]               = useState(proposal?.notes ?? '')
+
+  // Bill To (manual override or auto-filled from client)
+  const [billTo, setBillTo] = useState({
+    name:    proposal?.bill_to_name    ?? '',
+    company: proposal?.bill_to_company ?? '',
+    email:   proposal?.bill_to_email   ?? '',
+    phone:   proposal?.bill_to_phone   ?? '',
+    address: proposal?.bill_to_address ?? '',
+    city:    proposal?.bill_to_city    ?? '',
+    state:   proposal?.bill_to_state   ?? 'CA',
+    zip:     proposal?.bill_to_zip     ?? '',
+  })
+
+  const [siteSameAsBilling, setSiteSameAsBilling] = useState(false)
+  const [siteAddress, setSiteAddress] = useState(proposal?.site_address ?? '')
+  const [siteCity, setSiteCity]       = useState(proposal?.site_city ?? '')
+  const [siteState, setSiteState]     = useState(proposal?.site_state ?? 'CA')
+  const [siteZip, setSiteZip]         = useState(proposal?.site_zip ?? '')
+
+  // ── Line items ────────────────────────────────────────────────────────────
+  const initItems: LineItemDraft[] = (proposal?.line_items ?? []).map((li: ProposalLineItem) => ({
+    id: li.id, catalog_item_id: li.catalog_item_id, section: li.section,
+    sort_order: li.sort_order, name: li.name, description: li.description ?? '',
+    sku: li.sku ?? '', qty: li.qty, unit_label: li.unit_label, unit_price: li.unit_price,
+    taxable: li.taxable, is_recurring: li.is_recurring, recurring_label: li.recurring_label ?? '',
+  }))
+  const [items, setItems] = useState<LineItemDraft[]>(initItems)
+  const [saving, setSaving] = useState(false)
+
+  // Auto-fill bill-to when client selected
+  function handleClientChange(id: string) {
+    setClientId(id)
+    const c = clients.find(cl => cl.id === id)
+    if (!c) return
+    setBillTo({
+      name:    c.name    ?? '',
+      company: c.company ?? '',
+      email:   c.email   ?? '',
+      phone:   c.phone   ?? '',
+      address: c.billing_address ?? '',
+      city:    c.billing_city    ?? '',
+      state:   c.billing_state   ?? 'CA',
+      zip:     c.billing_zip     ?? '',
+    })
+    if (c.site_address) {
+      setSiteAddress(c.site_address)
+      setSiteCity(c.site_city ?? '')
+      setSiteState(c.site_state ?? 'CA')
+      setSiteZip(c.site_zip ?? '')
+    }
+  }
+
+  // Add line item from catalog
+  function addFromCatalog(item: CatalogItem) {
+    setItems(prev => [...prev, {
+      id: uid(), catalog_item_id: item.id,
+      section: (item.category === 'camera' ? 'cameras'
+              : item.category === 'network' ? 'network'
+              : item.category === 'hardware' ? 'hardware'
+              : item.category === 'labor' ? 'labor' : 'other') as LineSection,
+      sort_order: prev.length,
+      name: item.name, description: item.description ?? '',
+      sku: item.sku ?? '', qty: 1,
+      unit_label: item.unit_label, unit_price: item.unit_price,
+      taxable: item.taxable, is_recurring: false, recurring_label: '',
+    }])
+  }
+
+  function addBlankItem(section: LineSection) {
+    setItems(prev => [...prev, {
+      id: uid(), catalog_item_id: null, section, sort_order: prev.length,
+      name: '', description: '', sku: '', qty: 1,
+      unit_label: section === 'labor' ? 'hr' : 'ea',
+      unit_price: 0, taxable: section !== 'labor', is_recurring: false, recurring_label: '',
+    }])
+  }
+
+  function updateItem(id: string, field: keyof LineItemDraft, value: any) {
+    setItems(prev => prev.map(li => li.id === id ? { ...li, [field]: value } : li))
+  }
+
+  function removeItem(id: string) {
+    setItems(prev => prev.filter(li => li.id !== id))
+  }
+
+  // Totals
+  const totals = calcTotals(items.map(i => ({
+    qty: i.qty, unit_price: i.unit_price, taxable: i.taxable, section: i.section
+  })))
+  const deposit   = Math.round(totals.grand_total * 0.50 * 100) / 100
+  const progress  = Math.round(totals.grand_total * 0.25 * 100) / 100
+  const finalPmt  = Math.round((totals.grand_total - deposit - progress) * 100) / 100
+
+  // ── Save ─────────────────────────────────────────────────────────────────
+  async function handleSave(status: string = 'draft') {
+    setSaving(true)
+    const payload = {
+      client_id: clientId || null,
+      title, project_name: projectName, rep_name: repName,
+      scope_notes: scopeNotes, assumptions, exclusions,
+      monthly_notes: monthlyNotes, monthly_recurring: monthlyRecurring,
+      tax_rate: taxRate, status,
+      bill_to_name: billTo.name, bill_to_company: billTo.company,
+      bill_to_email: billTo.email, bill_to_phone: billTo.phone,
+      bill_to_address: billTo.address, bill_to_city: billTo.city,
+      bill_to_state: billTo.state, bill_to_zip: billTo.zip,
+      site_address: siteSameAsBilling ? billTo.address : siteAddress,
+      site_city:    siteSameAsBilling ? billTo.city    : siteCity,
+      site_state:   siteSameAsBilling ? billTo.state   : siteState,
+      site_zip:     siteSameAsBilling ? billTo.zip     : siteZip,
+      subtotal_equipment: totals.subtotal_equipment,
+      subtotal_labor: totals.subtotal_labor,
+      tax_amount: totals.tax_amount,
+      grand_total: totals.grand_total,
+      notes,
+      proposal_number: isEdit ? proposal.proposal_number : '',
+    }
+
+    let proposalId = proposal?.id
+
+    if (isEdit) {
+      await supabase.from('proposals').update(payload).eq('id', proposalId)
+      await supabase.from('proposal_line_items').delete().eq('proposal_id', proposalId)
+    } else {
+      const { data, error } = await supabase.from('proposals').insert(payload).select().single()
+      if (error || !data) { setSaving(false); alert(error?.message); return }
+      proposalId = data.id
+    }
+
+    if (items.length) {
+      const linePayload = items.map((li, i) => ({
+        proposal_id: proposalId, catalog_item_id: li.catalog_item_id,
+        section: li.section, sort_order: i,
+        name: li.name, description: li.description, sku: li.sku,
+        qty: li.qty, unit_label: li.unit_label, unit_price: li.unit_price,
+        taxable: li.taxable, is_recurring: li.is_recurring, recurring_label: li.recurring_label,
+      }))
+      await supabase.from('proposal_line_items').insert(linePayload)
+    }
+
+    setSaving(false)
+    router.push(`/proposals/${proposalId}`)
+  }
+
+  const catalogByCategory = catalog.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = []
+    acc[item.category].push(item)
+    return acc
+  }, {} as Record<string, CatalogItem[]>)
+
+  const itemsBySection = (section: LineSection) => items.filter(i => i.section === section)
+
+  return (
+    <div className="grid grid-cols-[1fr_280px] gap-6 items-start">
+      {/* ── Main form ── */}
+      <div className="space-y-6">
+
+        {/* Header info */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide">Proposal Details</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="label">Title *</label>
+              <input className="input" value={title} onChange={e => setTitle(e.target.value)}
+                placeholder="e.g. Security Camera System — ABC Business" />
+            </div>
+            <div>
+              <label className="label">Project Name</label>
+              <input className="input" value={projectName} onChange={e => setProjectName(e.target.value)}
+                placeholder="e.g. ABC Business Oakland" />
+            </div>
+            <div>
+              <label className="label">Prepared By</label>
+              <input className="input" value={repName} onChange={e => setRepName(e.target.value)}
+                placeholder="Paul / Garrett / David" />
+            </div>
+          </div>
+        </div>
+
+        {/* Client */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide">Client</h2>
+          <div>
+            <label className="label">Select Existing Client</label>
+            <select className="input" value={clientId} onChange={e => handleClientChange(e.target.value)}>
+              <option value="">— or fill in manually below —</option>
+              {clients.map(c => (
+                <option key={c.id} value={c.id}>{c.company || c.name}{c.company ? ` (${c.name})` : ''}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Contact Name</label>
+              <input className="input" value={billTo.name}
+                onChange={e => setBillTo(b => ({ ...b, name: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Company</label>
+              <input className="input" value={billTo.company}
+                onChange={e => setBillTo(b => ({ ...b, company: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Email</label>
+              <input className="input" type="email" value={billTo.email}
+                onChange={e => setBillTo(b => ({ ...b, email: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Phone</label>
+              <input className="input" value={billTo.phone}
+                onChange={e => setBillTo(b => ({ ...b, phone: e.target.value }))} />
+            </div>
+            <div className="col-span-2">
+              <label className="label">Billing Address</label>
+              <input className="input" value={billTo.address}
+                onChange={e => setBillTo(b => ({ ...b, address: e.target.value }))} />
+            </div>
+            <div><input className="input" placeholder="City" value={billTo.city}
+              onChange={e => setBillTo(b => ({ ...b, city: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <input className="input" placeholder="State" value={billTo.state}
+                onChange={e => setBillTo(b => ({ ...b, state: e.target.value }))} />
+              <input className="input" placeholder="ZIP" value={billTo.zip}
+                onChange={e => setBillTo(b => ({ ...b, zip: e.target.value }))} />
+            </div>
+          </div>
+
+          {/* Job site */}
+          <div className="pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="font-medium text-slate-700 text-sm">Job Site Address</h3>
+              <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer ml-auto">
+                <input type="checkbox" checked={siteSameAsBilling}
+                  onChange={e => setSiteSameAsBilling(e.target.checked)} />
+                Same as billing
+              </label>
+            </div>
+            {!siteSameAsBilling && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <input className="input" placeholder="Street address" value={siteAddress}
+                    onChange={e => setSiteAddress(e.target.value)} />
+                </div>
+                <input className="input" placeholder="City" value={siteCity}
+                  onChange={e => setSiteCity(e.target.value)} />
+                <div className="grid grid-cols-2 gap-2">
+                  <input className="input" placeholder="State" value={siteState}
+                    onChange={e => setSiteState(e.target.value)} />
+                  <input className="input" placeholder="ZIP" value={siteZip}
+                    onChange={e => setSiteZip(e.target.value)} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Scope */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide">Project Scope</h2>
+          <div>
+            <label className="label">Scope Narrative</label>
+            <textarea className="input min-h-[100px]" value={scopeNotes} onChange={e => setScopeNotes(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Assumptions</label>
+            <textarea className="input min-h-[100px]" value={assumptions} onChange={e => setAssumptions(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Exclusions</label>
+            <textarea className="input min-h-[100px]" value={exclusions} onChange={e => setExclusions(e.target.value)} />
+          </div>
+        </div>
+
+        {/* Line items by section */}
+        {SECTIONS.map(section => (
+          <div key={section} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 bg-slate-800">
+              <span className="text-sm font-semibold text-white">{SECTION_LABELS[section]}</span>
+              <button onClick={() => addBlankItem(section)}
+                className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300">
+                <Plus size={13} /> Add row
+              </button>
+            </div>
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs text-slate-500 w-[38%]">Description</th>
+                  <th className="px-2 py-2 text-left text-xs text-slate-500 w-[10%]">Qty</th>
+                  <th className="px-2 py-2 text-left text-xs text-slate-500 w-[8%]">Unit</th>
+                  <th className="px-2 py-2 text-left text-xs text-slate-500 w-[14%]">Unit Price</th>
+                  <th className="px-2 py-2 text-right text-xs text-slate-500 w-[14%]">Total</th>
+                  <th className="px-2 py-2 w-[8%]"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {itemsBySection(section).map((li, idx) => (
+                  <tr key={li.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                    <td className="px-4 py-2">
+                      <input className="input-sm w-full font-medium" placeholder="Item name"
+                        value={li.name} onChange={e => updateItem(li.id, 'name', e.target.value)} />
+                      <input className="input-sm w-full text-slate-400 mt-0.5 text-xs" placeholder="Description (optional)"
+                        value={li.description} onChange={e => updateItem(li.id, 'description', e.target.value)} />
+                    </td>
+                    <td className="px-2 py-2">
+                      <input className="input-sm w-full text-center" type="number" min="0" step="0.5"
+                        value={li.qty} onChange={e => updateItem(li.id, 'qty', parseFloat(e.target.value) || 0)} />
+                    </td>
+                    <td className="px-2 py-2">
+                      <input className="input-sm w-full text-center"
+                        value={li.unit_label} onChange={e => updateItem(li.id, 'unit_label', e.target.value)} />
+                    </td>
+                    <td className="px-2 py-2">
+                      <input className="input-sm w-full text-right" type="number" min="0" step="0.01"
+                        value={li.unit_price} onChange={e => updateItem(li.id, 'unit_price', parseFloat(e.target.value) || 0)} />
+                    </td>
+                    <td className="px-2 py-2 text-right font-semibold text-slate-700">
+                      {formatCurrency(li.qty * li.unit_price)}
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                      <button onClick={() => removeItem(li.id)} className="text-slate-300 hover:text-red-400 transition-colors">
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {itemsBySection(section).length === 0 && (
+                  <tr><td colSpan={6} className="px-4 py-4 text-xs text-slate-400 text-center">
+                    No items — add from catalog or click "Add row"
+                  </td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        ))}
+
+        {/* Recurring & Notes */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide">Monthly Recurring Services</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Total Monthly Recurring ($)</label>
+              <input className="input" type="number" min="0" step="0.01"
+                value={monthlyRecurring} onChange={e => setMonthlyRecurring(parseFloat(e.target.value) || 0)} />
+            </div>
+            <div>
+              <label className="label">Tax Rate</label>
+              <input className="input" type="number" min="0" max="1" step="0.0001"
+                value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} />
+              <p className="text-xs text-slate-400 mt-1">{(taxRate * 100).toFixed(2)}% — applies to taxable items only</p>
+            </div>
+            <div className="col-span-2">
+              <label className="label">Monthly Services Detail</label>
+              <input className="input" value={monthlyNotes} onChange={e => setMonthlyNotes(e.target.value)}
+                placeholder="e.g. Deep Sentinel: 1 hub + 6 cameras @ $50/ea = $350/mo" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <label className="label">Internal Notes</label>
+          <textarea className="input min-h-[80px]" value={notes} onChange={e => setNotes(e.target.value)}
+            placeholder="Notes visible only in admin portal" />
+        </div>
+
+        {/* Save buttons */}
+        <div className="flex gap-3 pb-8">
+          <button onClick={() => handleSave('draft')} disabled={saving}
+            className="flex-1 border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50">
+            {saving ? 'Saving…' : 'Save as Draft'}
+          </button>
+          <button onClick={() => handleSave('sent')} disabled={saving}
+            className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50">
+            {saving ? 'Saving…' : 'Save & Mark Sent'}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Sidebar: catalog + totals ── */}
+      <div className="space-y-4 sticky top-6">
+        {/* Totals */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-2">
+          <h3 className="font-semibold text-slate-800 text-sm mb-3">Totals</h3>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Equipment</span>
+            <span>{formatCurrency(totals.subtotal_equipment)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Labor</span>
+            <span>{formatCurrency(totals.subtotal_labor)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Tax ({(taxRate*100).toFixed(2)}%)</span>
+            <span>{formatCurrency(totals.tax_amount)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-base pt-2 border-t border-slate-200">
+            <span>One-Time Total</span>
+            <span className="text-cyan-600">{formatCurrency(totals.grand_total)}</span>
+          </div>
+          {monthlyRecurring > 0 && (
+            <div className="flex justify-between text-sm text-slate-500 pt-1 border-t border-slate-100">
+              <span>Monthly Recurring</span>
+              <span>{formatCurrency(monthlyRecurring)}/mo</span>
+            </div>
+          )}
+          <div className="pt-2 border-t border-slate-100 space-y-1 text-xs text-slate-500">
+            <div className="flex justify-between"><span>Deposit (50%)</span><span>{formatCurrency(deposit)}</span></div>
+            <div className="flex justify-between"><span>Progress (25%)</span><span>{formatCurrency(progress)}</span></div>
+            <div className="flex justify-between"><span>Final (25%)</span><span>{formatCurrency(finalPmt)}</span></div>
+          </div>
+        </div>
+
+        {/* Catalog */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800 text-sm">Equipment Catalog</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Click to add to proposal</p>
+          </div>
+          <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
+            {Object.entries(catalogByCategory).map(([cat, catItems]) => (
+              <div key={cat}>
+                <div className="px-4 py-2 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide capitalize">
+                  {cat === 'camera' ? 'Cameras' : cat}
+                </div>
+                {catItems.map(item => (
+                  <button key={item.id} onClick={() => addFromCatalog(item)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-cyan-50 transition-colors border-b border-slate-50 last:border-0">
+                    <div className="text-xs font-medium text-slate-800 leading-snug">{item.name}</div>
+                    <div className="flex justify-between items-center mt-0.5">
+                      <span className="text-xs text-slate-400">{item.sku || item.unit_label}</span>
+                      <span className="text-xs font-semibold text-cyan-600">{formatCurrency(item.unit_price)}/{item.unit_label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .label { display: block; font-size: 0.75rem; font-weight: 500; color: #64748B; margin-bottom: 0.25rem; }
+        .input { width: 100%; border: 1px solid #E2E8F0; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #0F172A; background: white; outline: none; }
+        .input:focus { border-color: #06B6D4; box-shadow: 0 0 0 2px rgba(6,182,212,0.15); }
+        .input-sm { border: 1px solid transparent; border-radius: 0.375rem; padding: 0.25rem 0.375rem; font-size: 0.8125rem; color: #0F172A; background: transparent; outline: none; width: 100%; }
+        .input-sm:focus { border-color: #06B6D4; background: white; }
+      `}</style>
+    </div>
+  )
+}
