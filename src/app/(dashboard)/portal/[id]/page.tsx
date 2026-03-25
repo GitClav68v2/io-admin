@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createPortalAdmin } from '@/lib/supabase/portal-admin'
 import PortalCustomerDetail from '@/components/PortalCustomerDetail'
 import { notFound } from 'next/navigation'
