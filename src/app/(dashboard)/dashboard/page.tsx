@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
         <Link href="/proposals/new"
@@ -33,7 +33,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-5 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
         {stats.map(({ label, value, icon: Icon, href, color }) => (
           <Link key={label} href={href}
             className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 hover:border-cyan-300 transition-colors">
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recent Proposals */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">

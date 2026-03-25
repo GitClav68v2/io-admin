@@ -21,6 +21,47 @@ export interface Client {
   notes: string | null
 }
 
+// ── Portal (customer-facing) types ────────────────────────────
+export interface PortalCustomer {
+  id: string
+  created_at: string
+  account_number: string
+  business_name: string
+  contact_name: string | null
+  email: string
+  phone: string | null
+}
+
+export type PortalInvoiceStatus = 'unpaid' | 'partial' | 'paid'
+
+export interface PortalInvoice {
+  id: string
+  created_at: string
+  customer_id: string
+  invoice_number: string
+  invoice_date: string
+  due_date: string | null
+  amount_total: number
+  amount_paid: number
+  status: PortalInvoiceStatus
+  pdf_path: string | null
+}
+
+export interface Supplier {
+  id: string
+  created_at: string
+  name: string
+  company: string | null
+  email: string | null
+  phone: string | null
+  website: string | null
+  address: string | null
+  city: string | null
+  state: string | null
+  zip: string | null
+  notes: string | null
+}
+
 export interface CatalogItem {
   id: string
   category: ItemCategory

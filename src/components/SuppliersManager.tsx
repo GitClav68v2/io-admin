@@ -1,43 +1,39 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Client } from '@/lib/types'
+import { Supplier } from '@/lib/types'
 import { Plus, X, Save } from 'lucide-react'
-import Link from 'next/link'
 
-const blank = (): Partial<Client> => ({
+const blank = (): Partial<Supplier> => ({
   name: '', company: '', email: '', phone: '',
-  billing_address: '', billing_city: '', billing_state: 'CA', billing_zip: '',
-  site_address: '', site_city: '', site_state: 'CA', site_zip: '', notes: '',
+  website: '', address: '', city: '', state: 'CA', zip: '', notes: '',
 })
 
-export default function ClientsManager({ initialClients }: { initialClients: Client[] }) {
-  const router = useRouter()
+export default function SuppliersManager({ initialSuppliers }: { initialSuppliers: Supplier[] }) {
   const supabase = createClient()
-  const [clients, setClients]     = useState(initialClients)
+  const [suppliers, setSuppliers] = useState(initialSuppliers)
   const [showForm, setShowForm]   = useState(false)
-  const [editing, setEditing]     = useState<Client | null>(null)
-  const [form, setForm]           = useState<Partial<Client>>(blank())
+  const [editing, setEditing]     = useState<Supplier | null>(null)
+  const [form, setForm]           = useState<Partial<Supplier>>(blank())
   const [saving, setSaving]       = useState(false)
 
   function openNew()  { setForm(blank()); setEditing(null); setShowForm(true) }
-  function openEdit(c: Client) { setForm(c); setEditing(c); setShowForm(true) }
+  function openEdit(s: Supplier) { setForm(s); setEditing(s); setShowForm(true) }
 
   async function handleSave() {
     setSaving(true)
     if (editing) {
-      const { data } = await supabase.from('clients').update(form).eq('id', editing.id).select().single()
-      if (data) setClients(prev => prev.map(c => c.id === data.id ? data : c))
+      const { data } = await supabase.from('suppliers').update(form).eq('id', editing.id).select().single()
+      if (data) setSuppliers(prev => prev.map(s => s.id === data.id ? data : s))
     } else {
-      const { data } = await supabase.from('clients').insert(form).select().single()
-      if (data) setClients(prev => [data, ...prev])
+      const { data } = await supabase.from('suppliers').insert(form).select().single()
+      if (data) setSuppliers(prev => [data, ...prev])
     }
     setSaving(false)
     setShowForm(false)
   }
 
-  function field(key: keyof Client, label: string, type = 'text', placeholder = '') {
+  function field(key: keyof Supplier, label: string, type = 'text', placeholder = '') {
     return (
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1">{label}</label>
@@ -54,7 +50,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
       <div className="flex justify-end mb-4">
         <button onClick={openNew}
           className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-          <Plus size={15} /> Add Client
+          <Plus size={15} /> Add Supplier
         </button>
       </div>
 
@@ -63,35 +59,25 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
         <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-16 z-50 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 mb-8">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="font-semibold text-slate-900">{editing ? 'Edit Client' : 'New Client'}</h2>
+              <h2 className="font-semibold text-slate-900">{editing ? 'Edit Supplier' : 'New OEM Supplier'}</h2>
               <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {field('name', 'Contact Name *')}
-                {field('company', 'Company / Business Name')}
+                {field('company', 'Company / Business Name *')}
+                {field('name', 'Contact Name')}
                 {field('email', 'Email', 'email')}
                 {field('phone', 'Phone')}
+                <div className="sm:col-span-2">{field('website', 'Website', 'url', 'https://')}</div>
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Billing Address</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Address</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">{field('billing_address', 'Street')}</div>
-                  {field('billing_city', 'City')}
+                  <div className="col-span-2">{field('address', 'Street')}</div>
+                  {field('city', 'City')}
                   <div className="grid grid-cols-2 gap-2">
-                    {field('billing_state', 'State')}
-                    {field('billing_zip', 'ZIP')}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Job Site Address (if different)</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">{field('site_address', 'Street')}</div>
-                  {field('site_city', 'City')}
-                  <div className="grid grid-cols-2 gap-2">
-                    {field('site_state', 'State')}
-                    {field('site_zip', 'ZIP')}
+                    {field('state', 'State')}
+                    {field('zip', 'ZIP')}
                   </div>
                 </div>
               </div>
@@ -105,39 +91,42 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
               <button onClick={() => setShowForm(false)} className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancel</button>
               <button onClick={handleSave} disabled={saving}
                 className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                <Save size={14} /> {saving ? 'Saving…' : 'Save Client'}
+                <Save size={14} /> {saving ? 'Saving…' : 'Save Supplier'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Client table */}
+      {/* Supplier table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Company / Name', 'Email', 'Phone', 'City', ''].map(h => (
+              {['Company / Name', 'Email', 'Phone', 'Website', 'City', ''].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {clients.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+            {suppliers.map(s => (
+              <tr key={s.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-5 py-3">
-                  <div className="font-medium text-slate-800">{c.company || c.name}</div>
-                  {c.company && <div className="text-xs text-slate-400">{c.name}</div>}
+                  <div className="font-medium text-slate-800">{s.company || s.name}</div>
+                  {s.company && <div className="text-xs text-slate-400">{s.name}</div>}
                 </td>
-                <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
-                <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>
-                <td className="px-5 py-3 text-slate-500">{c.billing_city || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">{s.email || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">{s.phone || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">
+                  {s.website ? <a href={s.website} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline">{s.website.replace(/^https?:\/\//, '')}</a> : '—'}
+                </td>
+                <td className="px-5 py-3 text-slate-500">{s.city || '—'}</td>
                 <td className="px-5 py-3">
-                  <button onClick={() => openEdit(c)} className="text-cyan-600 hover:underline text-xs font-medium">Edit</button>
+                  <button onClick={() => openEdit(s)} className="text-cyan-600 hover:underline text-xs font-medium">Edit</button>
                 </td>
               </tr>
             ))}
-            {!clients.length && <tr><td colSpan={5} className="px-5 py-12 text-center text-slate-400">No clients yet</td></tr>}
+            {!suppliers.length && <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No suppliers yet</td></tr>}
           </tbody>
         </table>
       </div>
