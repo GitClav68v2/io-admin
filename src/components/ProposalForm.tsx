@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Client, CatalogItem, ProposalLineItem, LineSection } from '@/lib/types'
 import { formatCurrency, calcTotals, SECTION_LABELS, TAX_RATE } from '@/lib/utils'
-import { Plus, Trash2, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, Search, X } from 'lucide-react'
 
 interface LineItemDraft {
   id: string
@@ -92,6 +92,37 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   }))
   const [items, setItems] = useState<LineItemDraft[]>(initItems)
   const [saving, setSaving] = useState(false)
+
+  // HubSpot search
+  const [hsQuery, setHsQuery]     = useState('')
+  const [hsResults, setHsResults] = useState<any[]>([])
+  const [hsSearching, setHsSearching] = useState(false)
+  const [hsOpen, setHsOpen]       = useState(false)
+
+  async function searchHubSpot(q: string) {
+    setHsQuery(q)
+    if (q.length < 2) { setHsResults([]); return }
+    setHsSearching(true)
+    const res = await fetch(`/api/hubspot?q=${encodeURIComponent(q)}`)
+    setHsResults(await res.json())
+    setHsSearching(false)
+  }
+
+  function importHubSpotContact(c: any) {
+    setBillTo({
+      name:    c.name,
+      company: c.company,
+      email:   c.email,
+      phone:   c.phone,
+      address: c.address,
+      city:    c.city,
+      state:   c.state || 'CA',
+      zip:     c.zip,
+    })
+    setHsOpen(false)
+    setHsQuery('')
+    setHsResults([])
+  }
 
   // Auto-fill bill-to when client selected
   function handleClientChange(id: string) {
@@ -254,6 +285,40 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                 <option key={c.id} value={c.id}>{c.company || c.name}{c.company ? ` (${c.name})` : ''}</option>
               ))}
             </select>
+          </div>
+
+          {/* HubSpot import */}
+          <div className="relative">
+            <button type="button" onClick={() => setHsOpen(o => !o)}
+              className="flex items-center gap-2 text-xs font-medium text-cyan-600 hover:text-cyan-500 transition-colors">
+              <Search size={13} /> Import from HubSpot
+            </button>
+            {hsOpen && (
+              <div className="absolute left-0 top-6 z-30 bg-white border border-slate-200 rounded-xl shadow-lg w-full min-w-[340px] p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <input autoFocus
+                    className="input flex-1 text-sm"
+                    placeholder="Search by name, company, or email…"
+                    value={hsQuery}
+                    onChange={e => searchHubSpot(e.target.value)} />
+                  <button onClick={() => { setHsOpen(false); setHsQuery(''); setHsResults([]) }}
+                    className="text-slate-400 hover:text-slate-600"><X size={15} /></button>
+                </div>
+                {hsSearching && <p className="text-xs text-slate-400 px-1">Searching…</p>}
+                {!hsSearching && hsResults.length === 0 && hsQuery.length >= 2 && (
+                  <p className="text-xs text-slate-400 px-1">No contacts found</p>
+                )}
+                <div className="divide-y divide-slate-50">
+                  {hsResults.map(c => (
+                    <button key={c.id} type="button" onClick={() => importHubSpotContact(c)}
+                      className="w-full text-left px-2 py-2 hover:bg-cyan-50 rounded-lg transition-colors">
+                      <div className="text-sm font-medium text-slate-800">{c.company || c.name}</div>
+                      <div className="text-xs text-slate-400">{c.company ? c.name + ' · ' : ''}{c.email}{c.phone ? ' · ' + c.phone : ''}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
