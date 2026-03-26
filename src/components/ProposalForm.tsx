@@ -62,6 +62,21 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   const [exclusions, setExclusions]     = useState(proposal?.exclusions ?? DEFAULT_EXCLUSIONS)
   const [monthlyNotes, setMonthlyNotes] = useState(proposal?.monthly_notes ?? '')
   const [monthlyRecurring, setMonthlyRecurring] = useState(proposal?.monthly_recurring ?? 0)
+  const [monthlyDisplay, setMonthlyDisplay] = useState(
+    (proposal?.monthly_recurring ?? 0) > 0 ? (proposal.monthly_recurring as number).toFixed(2) : ''
+  )
+
+  function handleMonthlyChange(val: string) {
+    const cleaned = val.replace(/[^\d.]/g, '').replace(/(\.\d{0,2}).*/, '$1').replace(/^(\d*)(\.\d*)?/, '$1$2')
+    setMonthlyDisplay(cleaned)
+    setMonthlyRecurring(parseFloat(cleaned) || 0)
+  }
+
+  function handleMonthlyBlur() {
+    const n = parseFloat(monthlyDisplay) || 0
+    setMonthlyRecurring(n)
+    setMonthlyDisplay(n > 0 ? n.toFixed(2) : '')
+  }
   const [taxRate, setTaxRate]           = useState(proposal?.tax_rate ?? TAX_RATE)
   const [notes, setNotes]               = useState(proposal?.notes ?? '')
 
@@ -558,8 +573,10 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Total Monthly Recurring ($)</label>
-              <input className="input" type="number" min="0" step="0.01"
-                value={monthlyRecurring} onChange={e => setMonthlyRecurring(parseFloat(e.target.value) || 0)} />
+              <input className="input" type="text" inputMode="decimal" placeholder="0.00"
+                value={monthlyDisplay}
+                onChange={e => handleMonthlyChange(e.target.value)}
+                onBlur={handleMonthlyBlur} />
             </div>
             <div>
               <label className="label">Tax Rate</label>
