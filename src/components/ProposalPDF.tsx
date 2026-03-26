@@ -31,7 +31,7 @@ const s = StyleSheet.create({
   clientLine: { fontSize: 8.5, color: GRAY, marginTop: 1 },
   // Section
   sectionWrap:{ margin: '14 20 0 20' },
-  secHeader:  { backgroundColor: NAVY, padding: '5 10', borderRadius: '3 3 0 0' },
+  secHeader:  { backgroundColor: NAVY, padding: '5 10', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
   secTitle:   { fontSize: 8, fontFamily: 'Helvetica-Bold', color: WHITE },
   // Table
   tableHead:  { flexDirection: 'row', backgroundColor: LIGHT, padding: '4 0', borderBottom: '1 solid #E2E8F0' },
@@ -51,7 +51,7 @@ const s = StyleSheet.create({
   totalRow:   { flexDirection: 'row', justifyContent: 'space-between', padding: '3 10' },
   totalLabel: { fontSize: 8.5, color: GRAY },
   totalVal:   { fontSize: 8.5 },
-  grandRow:   { flexDirection: 'row', justifyContent: 'space-between', padding: '5 10', backgroundColor: NAVY, borderRadius: '0 0 3 3' },
+  grandRow:   { flexDirection: 'row', justifyContent: 'space-between', padding: '5 10', backgroundColor: NAVY, borderBottomLeftRadius: 3, borderBottomRightRadius: 3 },
   grandLabel: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: WHITE },
   grandVal:   { fontSize: 10, fontFamily: 'Helvetica-Bold', color: CYAN },
   // Recurring
