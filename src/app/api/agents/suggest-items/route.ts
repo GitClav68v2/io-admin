@@ -3,21 +3,24 @@ import Anthropic from '@anthropic-ai/sdk'
 
 export const maxDuration = 60
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export async function POST(req: NextRequest) {
-  const { description, catalog } = await req.json()
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 })
+    }
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const { description, catalog } = await req.json()
 
-  const catalogLines = (catalog ?? []).map((item: any) =>
-    `  [${item.category}] ${item.name} | SKU: ${item.sku || '—'} | $${item.unit_price}/${item.unit_label} | taxable: ${item.taxable}`
-  ).join('\n')
+    const catalogLines = (catalog ?? []).map((item: any) =>
+      `  [${item.category}] ${item.name} | SKU: ${item.sku || '—'} | $${item.unit_price}/${item.unit_label} | taxable: ${item.taxable}`
+    ).join('\n')
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
-    messages: [{
-      role: 'user',
-      content: `You are a proposal assistant for Integration One, a commercial security camera installation company in California.
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      messages: [{
+        role: 'user',
+        content: `You are a proposal assistant for Integration One, a commercial security camera installation company in California.
 
 Available catalog items:
 ${catalogLines}
@@ -41,14 +44,15 @@ Each item must match this exact shape:
 }
 
 Be realistic. Return ONLY a valid JSON array — no markdown, no explanation.`,
-    }],
-  })
+      }],
+    })
 
-  try {
     const text = (message.content[0] as Anthropic.TextBlock).text.trim()
-    const items = JSON.parse(text)
+    // Strip markdown code fences if present
+    const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+    const items = JSON.parse(clean)
     return NextResponse.json({ items })
-  } catch {
-    return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message ?? 'Unknown error' }, { status: 500 })
   }
 }

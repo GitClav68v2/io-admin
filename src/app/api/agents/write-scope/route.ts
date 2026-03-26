@@ -3,17 +3,20 @@ import Anthropic from '@anthropic-ai/sdk'
 
 export const maxDuration = 60
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export async function POST(req: NextRequest) {
-  const { brief, clientName, siteAddress } = await req.json()
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 })
+    }
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const { brief, clientName, siteAddress } = await req.json()
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
-    messages: [{
-      role: 'user',
-      content: `You are writing a professional security camera installation proposal for Integration One, a California-based commercial security integrator.
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: `You are writing a professional security camera installation proposal for Integration One, a California-based commercial security integrator.
 
 Client: ${clientName || 'the client'}
 Site: ${siteAddress || 'the job site'}
@@ -29,14 +32,14 @@ Write three sections. Return as JSON with exactly these keys:
 Standard exclusions to include where relevant: permit fees (if required) billed at cost, high-voltage electrical work, underground conduit trenching, painting/patching after cable routing, internet service or router upgrades, monitoring subscription fees billed directly by provider.
 
 Tone: professional, clear, contractor-standard. Return ONLY valid JSON — no markdown, no extra text.`,
-    }],
-  })
+      }],
+    })
 
-  try {
     const text = (message.content[0] as Anthropic.TextBlock).text.trim()
-    const result = JSON.parse(text)
+    const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+    const result = JSON.parse(clean)
     return NextResponse.json(result)
-  } catch {
-    return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message ?? 'Unknown error' }, { status: 500 })
   }
 }
