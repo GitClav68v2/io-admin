@@ -339,7 +339,11 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             <div>
               <label className="label">Phone</label>
               <input className="input" value={billTo.phone}
-                onChange={e => setBillTo(b => ({ ...b, phone: e.target.value }))} />
+                onChange={e => {
+                  const d = e.target.value.replace(/\D/g, '').slice(0, 10)
+                  const fmt = d.length <= 3 ? d : d.length <= 6 ? d.slice(0,3)+'-'+d.slice(3) : d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6)
+                  setBillTo(b => ({ ...b, phone: fmt }))
+                }} />
             </div>
             <div className="col-span-2">
               <label className="label">Billing Address</label>

@@ -33,13 +33,20 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
     setShowForm(false)
   }
 
+  function fmtPhone(val: string) {
+    const d = val.replace(/\D/g, '').slice(0, 10)
+    if (d.length <= 3) return d
+    if (d.length <= 6) return d.slice(0,3) + '-' + d.slice(3)
+    return d.slice(0,3) + '-' + d.slice(3,6) + '-' + d.slice(6)
+  }
+
   function field(key: keyof Supplier, label: string, type = 'text', placeholder = '') {
     return (
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1">{label}</label>
         <input type={type} placeholder={placeholder}
           value={(form[key] as string) ?? ''}
-          onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+          onChange={e => setForm(f => ({ ...f, [key]: key === 'phone' ? fmtPhone(e.target.value) : e.target.value }))}
           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
       </div>
     )
