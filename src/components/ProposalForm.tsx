@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Client, CatalogItem, ProposalLineItem, LineSection } from '@/lib/types'
 import { formatCurrency, calcTotals, SECTION_LABELS, TAX_RATE } from '@/lib/utils'
-import { Plus, Trash2, ChevronDown, Search, X } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, Search, X, Sparkles, Loader2 } from 'lucide-react'
 
 interface LineItemDraft {
   id: string
@@ -92,6 +92,62 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   }))
   const [items, setItems] = useState<LineItemDraft[]>(initItems)
   const [saving, setSaving] = useState(false)
+
+  // AI agents
+  const [aiItemsOpen, setAiItemsOpen]           = useState(false)
+  const [aiItemsBrief, setAiItemsBrief]         = useState('')
+  const [aiItemsLoading, setAiItemsLoading]     = useState(false)
+  const [aiItemsSuggestions, setAiItemsSuggestions] = useState<any[]>([])
+  const [aiScopeOpen, setAiScopeOpen]           = useState(false)
+  const [aiScopeBrief, setAiScopeBrief]         = useState('')
+  const [aiScopeLoading, setAiScopeLoading]     = useState(false)
+
+  async function runSuggestItems() {
+    setAiItemsLoading(true)
+    try {
+      const res = await fetch('/api/agents/suggest-items', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: aiItemsBrief, catalog }),
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setAiItemsSuggestions(data.items)
+    } catch (e: any) { alert('AI error: ' + e.message) }
+    setAiItemsLoading(false)
+  }
+
+  function addSuggestedItems() {
+    const newItems = aiItemsSuggestions.map(s => ({
+      id: uid(),
+      catalog_item_id: catalog.find(c => c.sku && c.sku === s.sku)?.id ?? null,
+      section: s.section as LineSection,
+      sort_order: items.length,
+      name: s.name, description: s.description, sku: s.sku,
+      qty: s.qty, unit_label: s.unit_label, unit_price: s.unit_price,
+      taxable: s.taxable, is_recurring: false, recurring_label: '',
+    }))
+    setItems(prev => [...prev, ...newItems])
+    setAiItemsOpen(false); setAiItemsSuggestions([]); setAiItemsBrief('')
+  }
+
+  async function runWriteScope() {
+    setAiScopeLoading(true)
+    try {
+      const res = await fetch('/api/agents/write-scope', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brief: aiScopeBrief,
+          clientName: billTo.company || billTo.name,
+          siteAddress: siteSameAsBilling ? billTo.address : siteAddress,
+        }),
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setScopeNotes(data.scope); setAssumptions(data.assumptions); setExclusions(data.exclusions)
+      setAiScopeOpen(false); setAiScopeBrief('')
+    } catch (e: any) { alert('AI error: ' + e.message) }
+    setAiScopeLoading(false)
+  }
 
   // HubSpot search
   const [hsQuery, setHsQuery]     = useState('')
@@ -391,7 +447,13 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
 
         {/* Scope */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
-          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide">Project Scope</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide">Project Scope</h2>
+            <button type="button" onClick={() => setAiScopeOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-medium text-violet-600 hover:text-violet-500 transition-colors">
+              <Sparkles size={13} /> AI Write Scope
+            </button>
+          </div>
           <div>
             <label className="label">Scope Narrative</label>
             <textarea className="input min-h-[100px]" value={scopeNotes} onChange={e => setScopeNotes(e.target.value)} />
@@ -544,6 +606,12 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
           </div>
         </div>
 
+        {/* AI Suggest Items */}
+        <button type="button" onClick={() => setAiItemsOpen(true)}
+          className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-sm">
+          <Sparkles size={15} /> AI Suggest Line Items
+        </button>
+
         {/* Catalog */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100">
@@ -571,6 +639,95 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
           </div>
         </div>
       </div>
+
+      {/* AI Suggest Items modal */}
+      {aiItemsOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-16 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 mb-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-violet-600" />
+                <h2 className="font-semibold text-slate-900">AI Suggest Line Items</h2>
+              </div>
+              <button onClick={() => { setAiItemsOpen(false); setAiItemsSuggestions([]); setAiItemsBrief('') }}
+                className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              {aiItemsSuggestions.length === 0 ? (
+                <>
+                  <p className="text-sm text-slate-500">Describe the job and Claude will suggest equipment and labor line items from your catalog.</p>
+                  <textarea
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 min-h-[100px]"
+                    placeholder="e.g. Small retail store, front entrance + parking lot + back door, need 4–5 cameras, existing NVR on-site..."
+                    value={aiItemsBrief}
+                    onChange={e => setAiItemsBrief(e.target.value)} />
+                  <button onClick={runSuggestItems} disabled={aiItemsLoading || !aiItemsBrief.trim()}
+                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    {aiItemsLoading ? <><Loader2 size={14} className="animate-spin" /> Thinking…</> : <><Sparkles size={14} /> Suggest Items</>}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-slate-500">{aiItemsSuggestions.length} items suggested — review then add all to the proposal.</p>
+                  <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden max-h-[320px] overflow-y-auto">
+                    {aiItemsSuggestions.map((item, i) => (
+                      <div key={i} className="flex items-start justify-between px-4 py-2.5 bg-white hover:bg-slate-50">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-slate-800">{item.name}</div>
+                          <div className="text-xs text-slate-400">{item.section} · {item.description}</div>
+                        </div>
+                        <div className="text-right ml-4 shrink-0">
+                          <div className="text-sm font-semibold text-slate-700">{item.qty} × ${item.unit_price}</div>
+                          <div className="text-xs text-slate-400">{item.unit_label}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => setAiItemsSuggestions([])}
+                      className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                      ← Try Again
+                    </button>
+                    <button onClick={addSuggestedItems}
+                      className="flex-1 bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                      Add {aiItemsSuggestions.length} Items to Proposal
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Write Scope modal */}
+      {aiScopeOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-16 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 mb-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-violet-600" />
+                <h2 className="font-semibold text-slate-900">AI Write Scope</h2>
+              </div>
+              <button onClick={() => { setAiScopeOpen(false); setAiScopeBrief('') }}
+                className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-500">Briefly describe the job and Claude will write the scope narrative, assumptions, and exclusions.</p>
+              <textarea
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 min-h-[80px]"
+                placeholder="e.g. 6-camera system for a warehouse, covering all loading docks and the main office entrance…"
+                value={aiScopeBrief}
+                onChange={e => setAiScopeBrief(e.target.value)} />
+              <p className="text-xs text-slate-400">This will replace the current scope, assumptions, and exclusions text.</p>
+              <button onClick={runWriteScope} disabled={aiScopeLoading || !aiScopeBrief.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                {aiScopeLoading ? <><Loader2 size={14} className="animate-spin" /> Writing…</> : <><Sparkles size={14} /> Write Scope</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .label { display: block; font-size: 0.75rem; font-weight: 500; color: #64748B; margin-bottom: 0.25rem; }

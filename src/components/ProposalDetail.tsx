@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Proposal, CatalogItem, Client } from '@/lib/types'
 import { formatCurrency, formatDate, STATUS_COLORS, SECTION_LABELS } from '@/lib/utils'
-import { FileDown, Send, CheckCircle, XCircle, Edit, Receipt, Loader2 } from 'lucide-react'
+import { FileDown, Send, CheckCircle, XCircle, Edit, Receipt, Loader2, Sparkles, Copy, X } from 'lucide-react'
 import ProposalForm from './ProposalForm'
 
 interface Props { proposal: Proposal; catalog: CatalogItem[]; clients: Client[] }
@@ -14,6 +14,7 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
   const supabase = createClient()
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
+  const [followup, setFollowup] = useState<{ subject: string; body: string } | null>(null)
 
   async function updateStatus(status: string) {
     await supabase.from('proposals').update({ status, ...(status === 'sent' ? { sent_at: new Date().toISOString() } : status === 'accepted' ? { accepted_at: new Date().toISOString() } : {}) }).eq('id', proposal.id)
@@ -22,21 +23,44 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
 
   async function handlePDF() {
     setLoading('pdf')
-    const res = await fetch(`/api/proposals/${proposal.id}/pdf`)
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url
-    a.download = `${proposal.proposal_number}.pdf`
-    a.click(); URL.revokeObjectURL(url)
+    try {
+      const res = await fetch(`/api/proposals/${proposal.id}/pdf`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url
+      a.download = `${proposal.proposal_number}.pdf`
+      a.click(); URL.revokeObjectURL(url)
+    } catch { alert('Error generating PDF. Please try again.') }
     setLoading(null)
   }
 
   async function handleSend() {
     setLoading('send')
-    const res = await fetch(`/api/proposals/${proposal.id}/send`, { method: 'POST' })
-    const data = await res.json()
-    if (data.success) { alert('Proposal emailed successfully!'); router.refresh() }
-    else alert('Error: ' + data.error)
+    try {
+      const res = await fetch(`/api/proposals/${proposal.id}/send`, { method: 'POST' })
+      const data = await res.json()
+      if (data.success) { alert('Proposal emailed successfully!'); router.refresh() }
+      else alert('Error: ' + data.error)
+    } catch { alert('Error sending proposal. Please try again.') }
+    setLoading(null)
+  }
+
+  async function draftFollowup() {
+    setLoading('followup')
+    try {
+      const res = await fetch('/api/agents/draft-followup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proposalNumber: proposal.proposal_number,
+          clientName: proposal.bill_to_company || proposal.bill_to_name,
+          title: proposal.title, total: proposal.grand_total,
+          sentDate: proposal.sent_at, repName: proposal.rep_name,
+        }),
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setFollowup(data)
+    } catch (e: any) { alert('AI error: ' + e.message) }
     setLoading(null)
   }
 
@@ -96,6 +120,10 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
           )}
           {proposal.status === 'sent' && (
             <>
+              <button onClick={draftFollowup} disabled={!!loading}
+                className="flex items-center gap-2 border border-violet-300 hover:bg-violet-50 text-violet-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                {loading === 'followup' ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Draft Follow-up
+              </button>
               <button onClick={() => updateStatus('accepted')}
                 className="flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                 <CheckCircle size={14} /> Accept
@@ -182,6 +210,36 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
           </div>
         )
       })}
+
+      {/* Follow-up email modal */}
+      {followup && (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-16 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 mb-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-violet-600" />
+                <h2 className="font-semibold text-slate-900">Draft Follow-up Email</h2>
+              </div>
+              <button onClick={() => setFollowup(null)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-xs font-medium text-slate-500 mb-1">Subject</p>
+                <p className="text-sm font-semibold text-slate-800 bg-slate-50 rounded-lg px-3 py-2">{followup.subject}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-500 mb-1">Body</p>
+                <pre className="text-sm text-slate-700 bg-slate-50 rounded-lg px-3 py-3 whitespace-pre-wrap font-sans leading-relaxed">{followup.body}</pre>
+              </div>
+              <button
+                onClick={() => { navigator.clipboard.writeText(`Subject: ${followup.subject}\n\n${followup.body}`); alert('Copied!') }}
+                className="flex items-center gap-2 border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <Copy size={14} /> Copy to Clipboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Totals */}
       <div className="bg-white rounded-xl border border-slate-200 p-5 max-w-sm ml-auto">
