@@ -15,21 +15,29 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
 
   async function handlePDF() {
     setLoading('pdf')
-    const res = await fetch(`/api/invoices/${invoice.id}/pdf`)
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url
-    a.download = `${invoice.invoice_number}.pdf`
-    a.click(); URL.revokeObjectURL(url)
+    try {
+      const res = await fetch(`/api/invoices/${invoice.id}/pdf`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url
+      a.download = `${invoice.invoice_number}.pdf`
+      a.click(); URL.revokeObjectURL(url)
+    } catch {
+      alert('Error generating PDF. Please try again.')
+    }
     setLoading(null)
   }
 
   async function handleSend() {
     setLoading('send')
-    const res = await fetch(`/api/invoices/${invoice.id}/send`, { method: 'POST' })
-    const data = await res.json()
-    if (data.success) { alert('Invoice emailed!'); router.refresh() }
-    else alert('Error: ' + data.error)
+    try {
+      const res = await fetch(`/api/invoices/${invoice.id}/send`, { method: 'POST' })
+      const data = await res.json()
+      if (data.success) { alert('Invoice emailed!'); router.refresh() }
+      else alert('Error: ' + data.error)
+    } catch {
+      alert('Error sending invoice. Please try again.')
+    }
     setLoading(null)
   }
 
