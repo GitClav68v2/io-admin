@@ -91,6 +91,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
     taxable: li.taxable, is_recurring: li.is_recurring, recurring_label: li.recurring_label ?? '',
   }))
   const [items, setItems] = useState<LineItemDraft[]>(initItems)
+  const [activeRowId, setActiveRowId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   // AI agents
@@ -203,29 +204,47 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
     }
   }
 
-  // Add line item from catalog
+  const catalogSection = (cat: string): LineSection =>
+    cat === 'camera' ? 'cameras' : cat === 'network' ? 'network'
+    : cat === 'hardware' ? 'hardware' : cat === 'labor' ? 'labor' : 'other'
+
+  // Add line item from catalog — fills active row if one exists, else appends
   function addFromCatalog(item: CatalogItem) {
-    setItems(prev => [...prev, {
-      id: uid(), catalog_item_id: item.id,
-      section: (item.category === 'camera' ? 'cameras'
-              : item.category === 'network' ? 'network'
-              : item.category === 'hardware' ? 'hardware'
-              : item.category === 'labor' ? 'labor' : 'other') as LineSection,
-      sort_order: prev.length,
-      name: item.name, description: item.description ?? '',
-      sku: item.sku ?? '', qty: 1,
-      unit_label: item.unit_label, unit_price: item.unit_price,
-      taxable: item.taxable, is_recurring: false, recurring_label: '',
-    }])
+    if (activeRowId) {
+      setItems(prev => prev.map(li => li.id === activeRowId ? {
+        ...li,
+        catalog_item_id: item.id,
+        section: catalogSection(item.category),
+        name: item.name,
+        description: item.description ?? '',
+        sku: item.sku ?? '',
+        unit_label: item.unit_label,
+        unit_price: item.unit_price,
+        taxable: item.taxable,
+      } : li))
+      setActiveRowId(null)
+    } else {
+      setItems(prev => [...prev, {
+        id: uid(), catalog_item_id: item.id,
+        section: catalogSection(item.category),
+        sort_order: prev.length,
+        name: item.name, description: item.description ?? '',
+        sku: item.sku ?? '', qty: 1,
+        unit_label: item.unit_label, unit_price: item.unit_price,
+        taxable: item.taxable, is_recurring: false, recurring_label: '',
+      }])
+    }
   }
 
   function addBlankItem(section: LineSection) {
+    const id = uid()
     setItems(prev => [...prev, {
-      id: uid(), catalog_item_id: null, section, sort_order: prev.length,
+      id, catalog_item_id: null, section, sort_order: prev.length,
       name: '', description: '', sku: '', qty: 1,
       unit_label: section === 'labor' ? 'hr' : 'ea',
       unit_price: 0, taxable: section !== 'labor', is_recurring: false, recurring_label: '',
     }])
+    setActiveRowId(id)
   }
 
   function updateItem(id: string, field: keyof LineItemDraft, value: any) {
@@ -491,10 +510,13 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {itemsBySection(section).map((li, idx) => (
-                  <tr key={li.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                  <tr key={li.id} className={activeRowId === li.id ? 'bg-violet-50 ring-1 ring-inset ring-violet-300' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
                     <td className="px-4 py-2">
                       <input className="input-sm w-full font-medium" placeholder="Item name"
-                        value={li.name} onChange={e => updateItem(li.id, 'name', e.target.value)} />
+                        value={li.name}
+                        onFocus={() => setActiveRowId(li.id)}
+                        onBlur={() => setActiveRowId(id => id === li.id && li.name !== '' ? null : id)}
+                        onChange={e => updateItem(li.id, 'name', e.target.value)} />
                       <input className="input-sm w-full text-slate-400 mt-0.5 text-xs" placeholder="Description (optional)"
                         value={li.description} onChange={e => updateItem(li.id, 'description', e.target.value)} />
                     </td>
@@ -614,9 +636,11 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
 
         {/* Catalog */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-100">
+          <div className={`px-4 py-3 border-b ${activeRowId ? 'bg-violet-50 border-violet-200' : 'border-slate-100'}`}>
             <h3 className="font-semibold text-slate-800 text-sm">Equipment Catalog</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Click to add to proposal</p>
+            <p className={`text-xs mt-0.5 ${activeRowId ? 'text-violet-600 font-medium' : 'text-slate-400'}`}>
+              {activeRowId ? '← Click to fill active row' : 'Click to add to proposal'}
+            </p>
           </div>
           <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
             {Object.entries(catalogByCategory).map(([cat, catItems]) => (
