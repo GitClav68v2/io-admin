@@ -2,7 +2,7 @@ import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/rendere
 import { Proposal } from '@/lib/types'
 import { SECTION_LABELS } from '@/lib/utils'
 
-const NAVY  = '#0F172A'
+const NAVY  = '#4B5563'
 const CYAN  = '#06B6D4'
 const GRAY  = '#64748B'
 const LIGHT = '#F1F5F9'

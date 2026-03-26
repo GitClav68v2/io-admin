@@ -2,7 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { Invoice } from '@/lib/types'
 import { SECTION_LABELS } from '@/lib/utils'
 
-const NAVY = '#0F172A'; const CYAN = '#06B6D4'; const GRAY = '#64748B'; const LIGHT = '#F1F5F9'; const WHITE = '#FFFFFF'
+const NAVY = '#4B5563'; const CYAN = '#06B6D4'; const GRAY = '#64748B'; const LIGHT = '#F1F5F9'; const WHITE = '#FFFFFF'
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
 const fmtDate = (s: string | null | undefined) => s ? new Date(s).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'
 
