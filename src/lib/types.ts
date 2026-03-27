@@ -52,6 +52,10 @@ export interface Supplier {
   city: string | null
   state: string | null
   zip: string | null
+  billing_address: string | null
+  billing_city: string | null
+  billing_state: string | null
+  billing_zip: string | null
   notes: string | null
 }
 

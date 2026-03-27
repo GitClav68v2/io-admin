@@ -6,7 +6,9 @@ import { Plus, X, Save } from 'lucide-react'
 
 const blank = (): Partial<Supplier> => ({
   name: '', company: '', email: '', phone: '',
-  website: '', address: '', city: '', state: 'CA', zip: '', notes: '',
+  website: '', address: '', city: '', state: 'CA', zip: '',
+  billing_address: '', billing_city: '', billing_state: 'CA', billing_zip: '',
+  notes: '',
 })
 
 export default function SuppliersManager({ initialSuppliers }: { initialSuppliers: Supplier[] }) {
@@ -16,9 +18,18 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
   const [editing, setEditing]     = useState<Supplier | null>(null)
   const [form, setForm]           = useState<Partial<Supplier>>(blank())
   const [saving, setSaving]       = useState(false)
+  const [billingSame, setBillingSame] = useState(false)
 
-  function openNew()  { setForm(blank()); setEditing(null); setShowForm(true) }
-  function openEdit(s: Supplier) { setForm(s); setEditing(s); setShowForm(true) }
+  function openNew()  { setForm(blank()); setEditing(null); setBillingSame(false); setShowForm(true) }
+  function openEdit(s: Supplier) {
+    setForm(s)
+    setEditing(s)
+    setBillingSame(
+      !!s.address && s.billing_address === s.address &&
+      s.billing_city === s.city && s.billing_state === s.state && s.billing_zip === s.zip
+    )
+    setShowForm(true)
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -78,7 +89,7 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                 <div className="sm:col-span-2">{field('website', 'Website', 'url', 'https://')}</div>
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Address</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Corporate Address</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2">{field('address', 'Street')}</div>
                   {field('city', 'City')}
@@ -87,6 +98,34 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                     {field('zip', 'ZIP')}
                   </div>
                 </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Billing Address</p>
+                  <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                    <input type="checkbox" checked={billingSame} onChange={e => {
+                      setBillingSame(e.target.checked)
+                      if (e.target.checked) setForm(f => ({
+                        ...f,
+                        billing_address: f.address ?? '',
+                        billing_city: f.city ?? '',
+                        billing_state: f.state ?? 'CA',
+                        billing_zip: f.zip ?? '',
+                      }))
+                    }} />
+                    Same as corporate address
+                  </label>
+                </div>
+                {!billingSame && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">{field('billing_address', 'Street')}</div>
+                    {field('billing_city', 'City')}
+                    <div className="grid grid-cols-2 gap-2">
+                      {field('billing_state', 'State')}
+                      {field('billing_zip', 'ZIP')}
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Notes</label>
