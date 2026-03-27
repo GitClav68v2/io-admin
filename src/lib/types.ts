@@ -1,3 +1,13 @@
+export interface ClientSite {
+  id: string
+  client_id: string
+  label: string | null
+  address: string
+  city: string | null
+  state: string | null
+  zip: string | null
+}
+
 export type ProposalStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'expired'
 export type InvoiceStatus  = 'unpaid' | 'partial' | 'paid' | 'void'
 export type ItemCategory   = 'camera' | 'network' | 'hardware' | 'labor' | 'other'
