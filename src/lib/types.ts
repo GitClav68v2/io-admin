@@ -20,6 +20,8 @@ export interface Client {
   site_state: string | null
   site_zip: string | null
   notes: string | null
+  lead_source: string | null
+  referred_by: string | null
 }
 
 // ── Portal invoice types ───────────────────────────────────────
@@ -63,6 +65,8 @@ export interface CatalogItem {
   unit_label: string
   taxable: boolean
   active: boolean
+  cost_price: number
+  markup_pct: number
 }
 
 export interface Proposal {
@@ -106,8 +110,23 @@ export interface Proposal {
   rep_name: string | null
   notes: string | null
   version: number
+  conditional_inspection: boolean
+  inspection_clause: string | null
+  promo_code: string | null
+  promo_discount: number
   line_items?: ProposalLineItem[]
   client?: Client
+}
+
+export interface PromoCode {
+  id: string
+  code: string
+  type: 'percentage' | 'fixed'
+  value: number
+  expiry_date: string | null
+  max_uses: number | null
+  uses_count: number
+  active: boolean
 }
 
 export interface ProposalLineItem {
@@ -122,6 +141,7 @@ export interface ProposalLineItem {
   qty: number
   unit_label: string
   unit_price: number
+  cost_price: number
   total: number
   taxable: boolean
   is_recurring: boolean
@@ -171,6 +191,34 @@ export interface InvoiceLineItem {
   qty: number
   unit_label: string
   unit_price: number
+  cost_price: number
   total: number
   taxable: boolean
+}
+
+export interface CompanySettings {
+  id: string
+  address: string | null
+  phone: string | null
+  license_number: string | null
+  teams_link: string | null
+  logo_url: string | null
+}
+
+export interface CommissionRate {
+  id: string
+  user_email: string
+  rep_name: string | null
+  rate_pct: number
+  effective_date: string
+}
+
+export interface CommissionSummary {
+  rep_name: string
+  invoice_count: number
+  revenue: number
+  total_cost: number
+  gross_margin: number
+  margin_pct: number
+  commission_earned: number
 }

@@ -40,6 +40,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     tax_rate:         proposal.tax_rate,
     tax_amount:       proposal.tax_amount,
     grand_total:      proposal.grand_total,
+    promo_code:       proposal.promo_code ?? null,
+    promo_discount:   proposal.promo_discount ?? 0,
     amount_paid:      0,
     issue_date:       new Date().toISOString().split('T')[0],
     due_date:         dueDate.toISOString().split('T')[0],
@@ -59,6 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       qty:         li.qty,
       unit_label:  li.unit_label,
       unit_price:  li.unit_price,
+      cost_price:  li.cost_price ?? 0,
       taxable:     li.taxable,
     }))
     await supabase.from('invoice_line_items').insert(linePayload)

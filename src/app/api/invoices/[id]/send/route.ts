@@ -7,6 +7,7 @@ import { Resend } from 'resend'
 import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer'
 import { createElement, type ReactElement, type JSXElementConstructor } from 'react'
 import InvoicePDF from '@/components/InvoicePDF'
+import { getCompanySettings } from '@/lib/settings'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!invoice) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   if (!invoice.bill_to_email) return NextResponse.json({ error: 'No client email' }, { status: 400 })
 
-  const buffer = await renderToBuffer(createElement(InvoicePDF, { invoice }) as ReactElement<DocumentProps, string | JSXElementConstructor<any>>)
+  const settings = await getCompanySettings()
+  const buffer = await renderToBuffer(createElement(InvoicePDF, { invoice, settings }) as ReactElement<DocumentProps, string | JSXElementConstructor<any>>)
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
   const clientName = invoice.bill_to_company || invoice.bill_to_name || 'there'
 
@@ -69,7 +71,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           </p>
         </div>
         <div style="background: #F8FAFC; padding: 16px 28px; border-top: 1px solid #E2E8F0;">
-          <p style="color: #94A3B8; font-size: 12px; margin: 0;">Integration One · integrationone.net · CA Lic. #987654</p>
+          <p style="color: #94A3B8; font-size: 12px; margin: 0;">Integration One · integrationone.net${settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''}${settings.phone ? ` · ${settings.phone}` : ''}</p>
+          ${settings.teams_link ? `<p style="margin: 6px 0 0;"><a href="${settings.teams_link}" style="color: #06B6D4; font-size: 12px;">Schedule a Teams call</a></p>` : ''}
         </div>
       </div>
     `,

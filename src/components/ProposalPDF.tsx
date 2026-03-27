@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
-import { Proposal } from '@/lib/types'
+import { Proposal, CompanySettings } from '@/lib/types'
 import { SECTION_LABELS } from '@/lib/utils'
 
 const NAVY  = '#4B5563'
@@ -81,6 +81,10 @@ const s = StyleSheet.create({
   sigLine:    { flexDirection: 'row', marginBottom: 6 },
   sigLabel:   { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: NAVY, width: 65 },
   sigUnder:   { flex: 1, borderBottom: '1 solid #CBD5E1' },
+  // Conditional Inspection
+  inspectWrap:  { margin: '14 20 0 20', border: '1.5 solid #F59E0B', borderRadius: 4, padding: '8 10', backgroundColor: '#FFFBEB' },
+  inspectTitle: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#92400E', marginBottom: 4, letterSpacing: 0.5 },
+  inspectText:  { fontSize: 8.5, color: '#78350F', lineHeight: 1.5 },
   // Footer
   footer:     { position: 'absolute', bottom: 14, left: 20, right: 20, borderTop: '1 solid #E2E8F0', paddingTop: 5, flexDirection: 'row', justifyContent: 'space-between' },
   footText:   { fontSize: 7, color: GRAY },
@@ -115,7 +119,7 @@ const TERMS = [
   ['10. Entire Agreement.', 'This proposal, once accepted, constitutes the entire agreement between the parties.'],
 ]
 
-export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
+export default function ProposalPDF({ proposal, settings }: { proposal: Proposal; settings: CompanySettings }) {
   const items = proposal.line_items ?? []
   const sections = ['cameras','network','hardware','labor','other'] as const
   const deposit  = proposal.grand_total * (proposal.deposit_pct  / 100)
@@ -131,7 +135,7 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
           <View style={s.logoBlock}>
             <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
             <Text style={s.tagline}>Your Perimeter. Your Rules.</Text>
-            <Text style={s.contact}>integrationone.net  ·  info@integrationone.net  ·  (949) 233-1833</Text>
+            <Text style={s.contact}>integrationone.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
           </View>
           <View style={s.docBlock}>
             <Text style={s.docTitle}>PROPOSAL</Text>
@@ -147,7 +151,7 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
                 <Text style={s.metaVal}>{val}</Text>
               </View>
             ))}
-            <Text style={s.licText}>CA Lic. #987654</Text>
+            {settings.license_number ? <Text style={s.licText}>CA Lic. #{settings.license_number}</Text> : null}
           </View>
         </View>
 
@@ -206,7 +210,7 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
         )}
 
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One  ·  CA Lic. #987654  ·  integrationone.net</Text>
+          <Text style={s.footText}>Integration One{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  integrationone.net{settings.address ? `  ·  ${settings.address}` : ''}</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
@@ -259,6 +263,12 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
             <View style={s.totalRow}><Text style={s.totalLabel}>Equipment</Text><Text style={s.totalVal}>{fmt(proposal.subtotal_equipment)}</Text></View>
             <View style={s.totalRow}><Text style={s.totalLabel}>Labor</Text><Text style={s.totalVal}>{fmt(proposal.subtotal_labor)}</Text></View>
             <View style={s.totalRow}><Text style={s.totalLabel}>Sales Tax ({(proposal.tax_rate*100).toFixed(2)}%)</Text><Text style={s.totalVal}>{fmt(proposal.tax_amount)}</Text></View>
+            {proposal.promo_discount > 0 && (
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>Promo ({proposal.promo_code})</Text>
+                <Text style={[s.totalVal, { color: '#F59E0B' }]}>-{fmt(proposal.promo_discount)}</Text>
+              </View>
+            )}
             <View style={s.grandRow}><Text style={s.grandLabel}>ONE-TIME TOTAL</Text><Text style={s.grandVal}>{fmt(proposal.grand_total)}</Text></View>
           </View>
         </View>
@@ -295,8 +305,16 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
           </Text>
         </View>
 
+        {/* Conditional Inspection Notice */}
+        {proposal.conditional_inspection && proposal.inspection_clause && (
+          <View style={s.inspectWrap} wrap={false}>
+            <Text style={s.inspectTitle}>CONDITIONAL PROPOSAL</Text>
+            <Text style={s.inspectText}>{proposal.inspection_clause}</Text>
+          </View>
+        )}
+
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One  ·  CA Lic. #987654  ·  integrationone.net</Text>
+          <Text style={s.footText}>Integration One{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  integrationone.net</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
@@ -349,7 +367,7 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
         </View>
 
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One  ·  CA Lic. #987654  ·  info@integrationone.net  ·  (949) 233-1833</Text>
+          <Text style={s.footText}>Integration One{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

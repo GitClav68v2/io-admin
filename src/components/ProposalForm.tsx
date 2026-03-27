@@ -79,6 +79,8 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   }
   const [taxRate, setTaxRate]           = useState(proposal?.tax_rate ?? TAX_RATE)
   const [notes, setNotes]               = useState(proposal?.notes ?? '')
+  const [conditionalInspection, setConditionalInspection] = useState<boolean>(proposal?.conditional_inspection ?? false)
+  const [inspectionClause, setInspectionClause]           = useState<string>(proposal?.inspection_clause ?? '')
 
   // Bill To (manual override or auto-filled from client)
   const [billTo, setBillTo] = useState({
@@ -108,6 +110,55 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   const [items, setItems] = useState<LineItemDraft[]>(initItems)
   const [activeRowId, setActiveRowId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  // Promo code
+  const [promoCode, setPromoCode]       = useState<string>(proposal?.promo_code ?? '')
+  const [promoDiscount, setPromoDiscount] = useState<number>(proposal?.promo_discount ?? 0)
+  const [promoStatus, setPromoStatus]   = useState<null | 'valid' | 'invalid'>(
+    proposal?.promo_code ? 'valid' : null
+  )
+  const [promoMessage, setPromoMessage] = useState<string>(
+    proposal?.promo_code && proposal?.promo_discount > 0
+      ? `${proposal.promo_code} applied — saves ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(proposal.promo_discount)}`
+      : ''
+  )
+  const [promoValidating, setPromoValidating] = useState(false)
+
+  async function applyPromoCode() {
+    const trimmed = promoCode.trim()
+    if (!trimmed) return
+    setPromoValidating(true)
+    try {
+      const res = await fetch('/api/promo/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: trimmed, grandTotal: totals.grand_total }),
+      })
+      const data = await res.json()
+      if (data.valid) {
+        setPromoStatus('valid')
+        setPromoDiscount(data.discountAmount)
+        setPromoCode(data.code)
+        setPromoMessage(`${data.code} applied — saves ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.discountAmount)}`)
+      } else {
+        setPromoStatus('invalid')
+        setPromoDiscount(0)
+        setPromoMessage(data.reason ?? 'Invalid code')
+      }
+    } catch {
+      setPromoStatus('invalid')
+      setPromoDiscount(0)
+      setPromoMessage('Failed to validate code')
+    }
+    setPromoValidating(false)
+  }
+
+  function clearPromo() {
+    setPromoCode('')
+    setPromoDiscount(0)
+    setPromoStatus(null)
+    setPromoMessage('')
+  }
 
   // AI agents
   const [aiItemsOpen, setAiItemsOpen]           = useState(false)
@@ -274,9 +325,10 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   const totals = calcTotals(items.map(i => ({
     qty: i.qty, unit_price: i.unit_price, taxable: i.taxable, section: i.section
   })))
-  const deposit   = Math.round(totals.grand_total * 0.50 * 100) / 100
-  const progress  = Math.round(totals.grand_total * 0.25 * 100) / 100
-  const finalPmt  = Math.round((totals.grand_total - deposit - progress) * 100) / 100
+  const finalGrandTotal = Math.max(0, Math.round((totals.grand_total - promoDiscount) * 100) / 100)
+  const deposit   = Math.round(finalGrandTotal * 0.50 * 100) / 100
+  const progress  = Math.round(finalGrandTotal * 0.25 * 100) / 100
+  const finalPmt  = Math.round((finalGrandTotal - deposit - progress) * 100) / 100
 
   // ── Save ─────────────────────────────────────────────────────────────────
   async function handleSave(status: string = 'draft') {
@@ -298,8 +350,12 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       subtotal_equipment: totals.subtotal_equipment,
       subtotal_labor: totals.subtotal_labor,
       tax_amount: totals.tax_amount,
-      grand_total: totals.grand_total,
+      grand_total: finalGrandTotal,
+      promo_code: promoCode.trim() || null,
+      promo_discount: promoDiscount,
       notes,
+      conditional_inspection: conditionalInspection,
+      inspection_clause: conditionalInspection ? (inspectionClause || null) : null,
       proposal_number: isEdit ? proposal.proposal_number : '',
     }
 
@@ -323,6 +379,15 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
         taxable: li.taxable, is_recurring: li.is_recurring, recurring_label: li.recurring_label,
       }))
       await supabase.from('proposal_line_items').insert(linePayload)
+    }
+
+    // Increment promo uses on first save (new proposals only, or when promo was just applied)
+    if (!isEdit && promoCode.trim() && promoStatus === 'valid') {
+      await fetch('/api/promo/use', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.trim() }),
+      })
     }
 
     setSaving(false)
@@ -607,6 +672,57 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             placeholder="Notes visible only in admin portal" />
         </div>
 
+        {/* Conditional Inspection */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <input
+              id="conditionalInspection"
+              type="checkbox"
+              checked={conditionalInspection}
+              onChange={e => {
+                setConditionalInspection(e.target.checked)
+                if (!e.target.checked) setInspectionClause('')
+              }}
+              className="h-4 w-4 rounded border-slate-300 text-cyan-500 focus:ring-cyan-400 cursor-pointer"
+            />
+            <label htmlFor="conditionalInspection" className="text-sm font-medium text-slate-800 cursor-pointer">
+              Conditional on final site inspection
+            </label>
+          </div>
+          {conditionalInspection && (
+            <div className="space-y-3">
+              <div>
+                <label className="label">Clause Preset</label>
+                <select
+                  className="input"
+                  value=""
+                  onChange={e => { if (e.target.value) setInspectionClause(e.target.value) }}
+                >
+                  <option value="">— select a preset or write your own below —</option>
+                  <option value="This proposal is conditional upon final site inspection. Pricing is subject to adjustment based on actual site conditions found during inspection.">
+                    Short — pricing subject to adjustment
+                  </option>
+                  <option value="This proposal is conditional upon a final site inspection by an Integration One technician. Equipment quantities, cable routing paths, and labor hours may be revised following the inspection. A revised proposal will be issued prior to project commencement.">
+                    Standard — revised proposal before commencement
+                  </option>
+                  <option value="Pricing reflects a preliminary assessment only. Final pricing will be confirmed after an on-site walkthrough and is subject to change based on conditions discovered during inspection.">
+                    Preliminary — confirmed after walkthrough
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Inspection Clause</label>
+                <textarea
+                  className="input min-h-[80px]"
+                  value={inspectionClause}
+                  onChange={e => setInspectionClause(e.target.value)}
+                  placeholder="Conditional clause text that will appear on the PDF…"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Save buttons */}
         <div className="flex gap-3 pb-8">
           <button onClick={() => handleSave('draft')} disabled={saving}
@@ -637,9 +753,45 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             <span className="text-slate-500">Tax ({(taxRate*100).toFixed(2)}%)</span>
             <span>{formatCurrency(totals.tax_amount)}</span>
           </div>
+          {/* Promo code input */}
+          <div className="pt-2 border-t border-slate-100 space-y-1.5">
+            <label className="text-xs font-medium text-slate-500">Promo Code</label>
+            <div className="flex gap-1.5">
+              <input
+                className="input flex-1 text-sm"
+                placeholder="Enter code"
+                value={promoCode}
+                onChange={e => { setPromoCode(e.target.value); if (promoStatus) { setPromoStatus(null); setPromoDiscount(0); setPromoMessage('') } }}
+                onKeyDown={e => e.key === 'Enter' && applyPromoCode()}
+              />
+              {promoStatus === 'valid' ? (
+                <button type="button" onClick={clearPromo}
+                  className="px-2 py-1 text-xs text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                  Clear
+                </button>
+              ) : (
+                <button type="button" onClick={applyPromoCode} disabled={promoValidating || !promoCode.trim()}
+                  className="px-2 py-1 text-xs font-medium bg-cyan-500 hover:bg-cyan-400 text-white rounded-lg disabled:opacity-50 transition-colors">
+                  {promoValidating ? '…' : 'Apply'}
+                </button>
+              )}
+            </div>
+            {promoMessage && (
+              <p className={`text-xs ${promoStatus === 'valid' ? 'text-green-600' : 'text-red-500'}`}>
+                {promoMessage}
+              </p>
+            )}
+          </div>
+
+          {promoDiscount > 0 && (
+            <div className="flex justify-between text-sm text-green-600">
+              <span>Discount</span>
+              <span>-{formatCurrency(promoDiscount)}</span>
+            </div>
+          )}
           <div className="flex justify-between font-bold text-base pt-2 border-t border-slate-200">
             <span>One-Time Total</span>
-            <span className="text-cyan-600">{formatCurrency(totals.grand_total)}</span>
+            <span className="text-cyan-600">{formatCurrency(finalGrandTotal)}</span>
           </div>
           {monthlyRecurring > 0 && (
             <div className="flex justify-between text-sm text-slate-500 pt-1 border-t border-slate-100">

@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
-import { Invoice } from '@/lib/types'
+import { Invoice, CompanySettings } from '@/lib/types'
 import { SECTION_LABELS } from '@/lib/utils'
 
 const NAVY = '#4B5563'; const CYAN = '#06B6D4'; const GRAY = '#64748B'; const LIGHT = '#F1F5F9'; const WHITE = '#FFFFFF'
@@ -50,7 +50,7 @@ const s = StyleSheet.create({
   footText: { fontSize: 7, color: GRAY },
 })
 
-export default function InvoicePDF({ invoice }: { invoice: Invoice }) {
+export default function InvoicePDF({ invoice, settings }: { invoice: Invoice; settings: CompanySettings }) {
   const items = invoice.line_items ?? []
   const sections = ['cameras','network','hardware','labor','other'] as const
   return (
@@ -63,7 +63,7 @@ export default function InvoicePDF({ invoice }: { invoice: Invoice }) {
             {[['Invoice #:', invoice.invoice_number], ['Date:', fmtDate(invoice.issue_date)], ['Due:', fmtDate(invoice.due_date)]].map(([l,v]) => (
               <View key={l} style={s.metaRow}><Text style={s.metaLabel}>{l}</Text><Text style={s.metaVal}>{v}</Text></View>
             ))}
-            <Text style={[s.metaVal, { fontSize: 7, color: CYAN, marginTop: 4 }]}>CA Lic. #987654</Text>
+            {settings.license_number ? <Text style={[s.metaVal, { fontSize: 7, color: CYAN, marginTop: 4 }]}>CA Lic. #{settings.license_number}</Text> : null}
           </View>
         </View>
 
@@ -121,7 +121,7 @@ export default function InvoicePDF({ invoice }: { invoice: Invoice }) {
         </View>
 
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One · CA Lic. #987654 · integrationone.net · info@integrationone.net</Text>
+          <Text style={s.footText}>Integration One{settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''} · integrationone.net · info@integrationone.net{settings.phone ? ` · ${settings.phone}` : ''}</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

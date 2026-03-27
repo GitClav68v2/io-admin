@@ -97,6 +97,12 @@ export default function PortalCustomerDetail({
               {client.email && <span className="mr-3">{client.email}</span>}
               {client.phone && <span>{client.phone}</span>}
             </p>
+            {client.lead_source && (
+              <p className="text-slate-400 text-xs mt-2">
+                <span className="font-medium text-slate-500">Lead Source:</span> {client.lead_source}
+                {client.referred_by && <span> &mdash; <span className="font-medium text-slate-500">Referred by:</span> {client.referred_by}</span>}
+              </p>
+            )}
           </div>
         </div>
       </div>

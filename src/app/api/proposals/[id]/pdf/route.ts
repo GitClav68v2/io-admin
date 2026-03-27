@@ -4,6 +4,7 @@ import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer'
 import { createElement, type ReactElement, type JSXElementConstructor } from 'react'
 import ProposalPDF from '@/components/ProposalPDF'
 import { requireAuth } from '@/lib/api-auth'
+import { getCompanySettings } from '@/lib/settings'
 
 export const maxDuration = 60
 
@@ -25,7 +26,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (!proposal) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const buffer = await renderToBuffer(createElement(ProposalPDF, { proposal }) as ReactElement<DocumentProps, string | JSXElementConstructor<any>>)
+    const settings = await getCompanySettings()
+    const buffer = await renderToBuffer(createElement(ProposalPDF, { proposal, settings }) as ReactElement<DocumentProps, string | JSXElementConstructor<any>>)
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {

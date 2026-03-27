@@ -5,10 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import { Client } from '@/lib/types'
 import { Plus, X, Save } from 'lucide-react'
 
+const LEAD_SOURCE_OPTIONS = ['Google Search', 'Referral', 'Existing Customer', 'LinkedIn', 'Trade Show', 'Other']
+
 const blank = (): Partial<Client> => ({
   name: '', company: '', email: '', phone: '',
   billing_address: '', billing_city: '', billing_state: 'CA', billing_zip: '',
   site_address: '', site_city: '', site_state: 'CA', site_zip: '', notes: '',
+  lead_source: '', referred_by: '',
 })
 
 export default function ClientsManager({ initialClients }: { initialClients: Client[] }) {
@@ -105,6 +108,26 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 <label className="block text-xs font-medium text-slate-500 mb-1">Notes</label>
                 <textarea value={form.notes ?? ''} onChange={e => setForm(f => ({...f, notes: e.target.value}))}
                   className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 min-h-[70px]" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Lead Source</label>
+                  <select value={form.lead_source ?? ''}
+                    onChange={e => setForm(f => ({ ...f, lead_source: e.target.value, referred_by: e.target.value !== 'Referral' ? '' : f.referred_by }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    <option value="">Select…</option>
+                    {LEAD_SOURCE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                {form.lead_source === 'Referral' && (
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Referred By <span className="font-normal">(name or company)</span></label>
+                    <input type="text" placeholder="e.g. John Smith at ABC Corp" maxLength={100}
+                      value={form.referred_by ?? ''}
+                      onChange={e => setForm(f => ({ ...f, referred_by: e.target.value }))}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">

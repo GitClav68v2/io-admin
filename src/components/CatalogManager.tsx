@@ -16,6 +16,7 @@ const CATEGORIES: { value: ItemCategory; label: string }[] = [
 const blank = (): Partial<CatalogItem> => ({
   category: 'camera', name: '', description: '', sku: '',
   unit_price: 0, unit_label: 'ea', taxable: true, active: true,
+  cost_price: 0, markup_pct: 0,
 })
 
 export default function CatalogManager({ initialItems }: { initialItems: CatalogItem[] }) {
@@ -104,6 +105,27 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     placeholder="ea, hr, lot, ft" />
                 </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Our Cost ($)</label>
+                  <input type="number" min="0" step="0.01" inputMode="decimal" value={form.cost_price ?? 0}
+                    onChange={e => setForm(f => ({...f, cost_price: parseFloat(e.target.value) || 0}))}
+                    onBlur={e => setForm(f => ({...f, cost_price: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Markup %</label>
+                  <input type="number" min="0" step="0.1" inputMode="decimal" value={form.markup_pct ?? 0}
+                    onChange={e => setForm(f => ({...f, markup_pct: parseFloat(e.target.value) || 0}))}
+                    onBlur={e => setForm(f => ({...f, markup_pct: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-slate-400">
+                    Sell Price (calculated): <span className="font-semibold text-slate-600">
+                      ${((form.cost_price ?? 0) * (1 + (form.markup_pct ?? 0) / 100)).toFixed(2)}
+                    </span> — for reference only; Unit Price above is what gets saved.
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -139,14 +161,14 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    {['Name / Description', 'SKU', 'Unit Price', 'Unit', 'Taxable', 'Active', ''].map(h => (
+                    {['Name / Description', 'SKU', 'Cost', 'Markup %', 'Unit Price', 'Unit', 'Taxable', 'Active', ''].map(h => (
                       <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {!catItems.length && (
-                    <tr><td colSpan={7} className="px-4 py-6 text-center text-xs text-slate-400">No items — click Add Item to get started</td></tr>
+                    <tr><td colSpan={9} className="px-4 py-6 text-center text-xs text-slate-400">No items — click Add Item to get started</td></tr>
                   )}
                   {catItems.map((item, i) => (
                     <tr key={item.id} className={`${i%2===0?'bg-white':'bg-slate-50/40'} ${!item.active ? 'opacity-50' : ''}`}>
@@ -155,6 +177,8 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                         {item.description && <div className="text-xs text-slate-400">{item.description}</div>}
                       </td>
                       <td className="px-4 py-2.5 text-xs text-slate-400 font-mono">{item.sku || '—'}</td>
+                      <td className="px-4 py-2.5 text-xs text-slate-500">{item.cost_price ? formatCurrency(item.cost_price) : '—'}</td>
+                      <td className="px-4 py-2.5 text-xs text-slate-500">{item.markup_pct ? `${item.markup_pct}%` : '—'}</td>
                       <td className="px-4 py-2.5 font-semibold text-cyan-600">{formatCurrency(item.unit_price)}</td>
                       <td className="px-4 py-2.5 text-slate-500">{item.unit_label}</td>
                       <td className="px-4 py-2.5 text-slate-500">{item.taxable ? '✓' : '—'}</td>

@@ -42,6 +42,17 @@ export const SECTION_LABELS: Record<string, string> = {
 
 export const TAX_RATE = 0.1025
 
+export function calcCommission(
+  lineItems: Array<{ unit_price: number; cost_price: number; qty: number }>,
+  ratePct: number
+): { revenue: number; cost: number; margin: number; commission: number } {
+  const revenue = lineItems.reduce((s, li) => s + li.unit_price * li.qty, 0)
+  const cost = lineItems.reduce((s, li) => s + (li.cost_price ?? 0) * li.qty, 0)
+  const margin = revenue - cost
+  const commission = margin * ratePct / 100
+  return { revenue, cost, margin, commission }
+}
+
 export function calcTotals(items: { qty: number; unit_price: number; taxable: boolean; section: string }[]) {
   const equipmentSections = ['cameras', 'network', 'hardware', 'other']
   let subtotal_equipment = 0

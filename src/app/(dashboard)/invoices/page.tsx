@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { Download } from 'lucide-react'
 import { formatCurrency, formatDateShort, STATUS_COLORS } from '@/lib/utils'
 
 export default async function InvoicesPage() {
@@ -11,7 +12,17 @@ export default async function InvoicesPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Invoices</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">Invoices</h1>
+        <a
+          href="/api/invoices/export"
+          download
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+        >
+          <Download className="w-4 h-4" />
+          Export to QuickBooks
+        </a>
+      </div>
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
