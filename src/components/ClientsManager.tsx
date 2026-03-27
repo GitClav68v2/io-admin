@@ -301,10 +301,10 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 </td>
                 <td className="px-5 py-3">
                   {c.phone
-                    ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()}
-                        className="flex items-center gap-1 text-cyan-600 hover:underline font-medium w-fit">
+                    ? <span onClick={e => { e.stopPropagation(); window.location.href = `tel:${c.phone!.replace(/\D/g, '')}` }}
+                        className="flex items-center gap-1 text-cyan-600 hover:underline font-medium cursor-pointer w-fit">
                         <Phone size={12} />{c.phone}
-                      </a>
+                      </span>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">

@@ -166,13 +166,18 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                 </td>
                 <td className="px-5 py-3">
                   {s.phone
-                    ? <a href={`tel:${s.phone.replace(/\D/g, '')}`} className="flex items-center gap-1 text-cyan-600 hover:underline font-medium w-fit">
+                    ? <span onClick={() => { window.location.href = `tel:${s.phone!.replace(/\D/g, '')}` }}
+                        className="flex items-center gap-1 text-cyan-600 hover:underline font-medium cursor-pointer w-fit">
                         <Phone size={12} />{s.phone}
-                      </a>
+                      </span>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">
-                  {s.website ? <a href={s.website} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline">{s.website.replace(/^https?:\/\//, '')}</a> : '—'}
+                  {s.website
+                    ? <a href={s.website.startsWith('http') ? s.website : `https://${s.website}`} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline">
+                        {s.website.replace(/^https?:\/\//, '')}
+                      </a>
+                    : '—'}
                 </td>
                 <td className="px-5 py-3 text-slate-500">
                   {s.address ? (() => {
