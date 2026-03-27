@@ -164,7 +164,12 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                     ? <span className="font-mono text-xs bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded">{c.account_number}</span>
                     : <span className="text-xs text-slate-300">—</span>}
                 </td>
-                <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">
+                  {c.email
+                    ? <a href={`mailto:${c.email}`} onClick={e => e.stopPropagation()}
+                        className="text-cyan-600 hover:underline">{c.email}</a>
+                    : '—'}
+                </td>
                 <td className="px-5 py-3 text-slate-500">
                   {c.phone
                     ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()}
