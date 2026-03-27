@@ -9,25 +9,21 @@ import { PortalCustomer, PortalInvoice } from '@/lib/types'
 
 export async function addPortalCustomer(form: Partial<PortalCustomer>): Promise<{ data?: PortalCustomer; error?: string }> {
   try {
-    console.log('[addPortalCustomer] url:', process.env.PORTAL_SUPABASE_URL, 'key prefix:', process.env.PORTAL_SUPABASE_SERVICE_ROLE_KEY?.slice(0, 20))
     const db = createPortalAdmin()
-    const { data: rows, error: rowsErr } = await db
+    const { data: rows } = await db
       .from('customers')
       .select('account_number')
       .order('account_number', { ascending: false })
       .limit(1)
-    console.log('[addPortalCustomer] rows query:', { rows, rowsErr })
     const last = rows?.[0] ?? null
     const next = last
       ? `IO-${String(parseInt(last.account_number.replace('IO-', ''), 10) + 1).padStart(4, '0')}`
       : 'IO-0001'
     const { data, error } = await db.from('customers').insert({ ...form, account_number: next }).select().single()
-    console.log('[addPortalCustomer] insert:', { data, error })
     if (error) return { error: error.message }
     try { revalidatePath('/portal') } catch {}
     return { data: data as PortalCustomer }
   } catch (e: any) {
-    console.error('[addPortalCustomer] threw:', e)
     return { error: e.message ?? 'Unknown error' }
   }
 }
