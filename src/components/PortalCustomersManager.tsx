@@ -27,9 +27,9 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
           </thead>
           <tbody className="divide-y divide-slate-100">
             {customers.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => router.push(`/portal/${c.id}`)}>
+              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-5 py-3 font-mono text-xs text-slate-500">{c.account_number}</td>
-                <td className="px-5 py-3 font-medium text-slate-800">{c.company || c.name}</td>
+                <td className="px-5 py-3 font-medium text-cyan-600 hover:underline cursor-pointer" onClick={() => router.push('/clients')}>{c.company || c.name}</td>
                 <td className="px-5 py-3 text-slate-500">{c.name || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>

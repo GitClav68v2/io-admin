@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Client, ClientSite } from '@/lib/types'
 import { Plus, X, Save, Trash2 } from 'lucide-react'
@@ -26,7 +25,6 @@ const blank = (): Partial<Client> => ({
 })
 
 export default function ClientsManager({ initialClients }: { initialClients: Client[] }) {
-  const router = useRouter()
   const supabase = createClient()
   const [clients, setClients]         = useState(initialClients)
   const [showForm, setShowForm]       = useState(false)
@@ -285,9 +283,9 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
           </thead>
           <tbody className="divide-y divide-slate-50">
             {clients.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => router.push(`/portal/${c.id}`)}>
-                <td className="px-5 py-3">
-                  <div className="font-medium text-slate-800">{c.company || c.name}</div>
+              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                <td className="px-5 py-3 cursor-pointer" onClick={() => openEdit(c)}>
+                  <div className="font-medium text-cyan-600 hover:underline">{c.company || c.name}</div>
                   {c.company && <div className="text-xs text-slate-400">{c.name}</div>}
                 </td>
                 <td className="px-5 py-3">
