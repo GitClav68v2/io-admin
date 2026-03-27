@@ -24,18 +24,16 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
   async function handleSave() {
     setSaving(true)
     setError('')
-    try {
-      if (editing) {
-        const data = await updatePortalCustomer(editing.id, form)
-        setCustomers(prev => prev.map(c => c.id === data.id ? data : c))
-      } else {
-        const data = await addPortalCustomer(form)
-        setCustomers(prev => [data, ...prev])
-      }
-      setShowForm(false)
-    } catch (e: any) {
-      setError(e.message)
+    if (editing) {
+      const result = await updatePortalCustomer(editing.id, form)
+      if (result.error) { setError(result.error); setSaving(false); return }
+      setCustomers(prev => prev.map(c => c.id === result.data!.id ? result.data! : c))
+    } else {
+      const result = await addPortalCustomer(form)
+      if (result.error) { setError(result.error); setSaving(false); return }
+      setCustomers(prev => [result.data!, ...prev])
     }
+    setShowForm(false)
     setSaving(false)
   }
 

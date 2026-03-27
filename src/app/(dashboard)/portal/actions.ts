@@ -4,35 +4,40 @@ import { Resend } from 'resend'
 import { revalidatePath } from 'next/cache'
 import { PortalCustomer, PortalInvoice } from '@/lib/types'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 // ── Customers ──────────────────────────────────────────────────
 
-export async function addPortalCustomer(form: Partial<PortalCustomer>) {
-  const db = createPortalAdmin()
-  // Auto-suggest next account number
-  const { data: last } = await db
-    .from('customers')
-    .select('account_number')
-    .order('account_number', { ascending: false })
-    .limit(1)
-    .single()
-  const next = last
-    ? `IO-${String(parseInt(last.account_number.replace('IO-', ''), 10) + 1).padStart(4, '0')}`
-    : 'IO-0001'
-  const { data, error } = await db.from('customers').insert({ ...form, account_number: next }).select().single()
-  if (error) throw new Error(error.message)
-  revalidatePath('/portal')
-  return data as PortalCustomer
+export async function addPortalCustomer(form: Partial<PortalCustomer>): Promise<{ data?: PortalCustomer; error?: string }> {
+  try {
+    const db = createPortalAdmin()
+    const { data: rows } = await db
+      .from('customers')
+      .select('account_number')
+      .order('account_number', { ascending: false })
+      .limit(1)
+    const last = rows?.[0] ?? null
+    const next = last
+      ? `IO-${String(parseInt(last.account_number.replace('IO-', ''), 10) + 1).padStart(4, '0')}`
+      : 'IO-0001'
+    const { data, error } = await db.from('customers').insert({ ...form, account_number: next }).select().single()
+    if (error) return { error: error.message }
+    try { revalidatePath('/portal') } catch {}
+    return { data: data as PortalCustomer }
+  } catch (e: any) {
+    return { error: e.message ?? 'Unknown error' }
+  }
 }
 
-export async function updatePortalCustomer(id: string, form: Partial<PortalCustomer>) {
-  const db = createPortalAdmin()
-  const { data, error } = await db.from('customers').update(form).eq('id', id).select().single()
-  if (error) throw new Error(error.message)
-  revalidatePath('/portal')
-  revalidatePath(`/portal/${id}`)
-  return data as PortalCustomer
+export async function updatePortalCustomer(id: string, form: Partial<PortalCustomer>): Promise<{ data?: PortalCustomer; error?: string }> {
+  try {
+    const db = createPortalAdmin()
+    const { data, error } = await db.from('customers').update(form).eq('id', id).select().single()
+    if (error) return { error: error.message }
+    try { revalidatePath('/portal'); revalidatePath(`/portal/${id}`) } catch {}
+    return { data: data as PortalCustomer }
+  } catch (e: any) {
+    return { error: e.message ?? 'Unknown error' }
+  }
 }
 
 // ── Invoices ───────────────────────────────────────────────────
@@ -52,6 +57,7 @@ export async function addPortalInvoice(
   // Send email notification to customer
   const { data: customer } = await db.from('customers').select('email, business_name').eq('id', customerId).single()
   if (customer?.email) {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2 })
     const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     await resend.emails.send({
