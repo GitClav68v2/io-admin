@@ -1,96 +1,20 @@
 'use client'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Client } from '@/lib/types'
-import { addPortalCustomer, updatePortalCustomer } from '@/app/(dashboard)/portal/actions'
-import { Plus, X, Save } from 'lucide-react'
-
-const blank = (): Partial<Client> => ({
-  company: '', name: '', email: '', phone: '',
-})
+import { Plus } from 'lucide-react'
 
 export default function PortalCustomersManager({ initialCustomers }: { initialCustomers: Client[] }) {
   const router = useRouter()
-  const [customers, setCustomers] = useState(initialCustomers)
-  const [showForm, setShowForm]   = useState(false)
-  const [editing, setEditing]     = useState<Client | null>(null)
-  const [form, setForm]           = useState<Partial<Client>>(blank())
-  const [saving, setSaving]       = useState(false)
-  const [error, setError]         = useState('')
-
-  function openNew()  { setForm(blank()); setEditing(null); setShowForm(true); setError('') }
-  function openEdit(c: Client) { setForm(c); setEditing(c); setShowForm(true); setError('') }
-
-  async function handleSave() {
-    setSaving(true)
-    setError('')
-    if (editing) {
-      const result = await updatePortalCustomer(editing.id, form)
-      if (result.error) { setError(result.error); setSaving(false); return }
-      setCustomers(prev => prev.map(c => c.id === result.data!.id ? result.data! : c))
-    } else {
-      const result = await addPortalCustomer(form)
-      if (result.error) { setError(result.error); setSaving(false); return }
-      setCustomers(prev => [result.data!, ...prev])
-    }
-    setShowForm(false)
-    setSaving(false)
-  }
-
-  function fmtPhone(val: string) {
-    const d = val.replace(/\D/g, '').slice(0, 10)
-    if (d.length <= 3) return d
-    if (d.length <= 6) return d.slice(0,3) + '-' + d.slice(3)
-    return d.slice(0,3) + '-' + d.slice(3,6) + '-' + d.slice(6)
-  }
-
-  function field(key: keyof Client, label: string, type = 'text') {
-    return (
-      <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1">{label}</label>
-        <input type={type}
-          value={(form[key] as string) ?? ''}
-          onChange={e => setForm(f => ({ ...f, [key]: key === 'phone' ? fmtPhone(e.target.value) : e.target.value }))}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
-      </div>
-    )
-  }
+  const customers = initialCustomers
 
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <button onClick={openNew}
+        <button onClick={() => router.push('/clients')}
           className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-          <Plus size={15} /> Add Customer
+          <Plus size={15} /> Add Client
         </button>
       </div>
-
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-16 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 mb-8">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="font-semibold text-slate-900">{editing ? 'Edit Customer' : 'New Customer'}</h2>
-              <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {field('company', 'Business Name *')}
-                {field('name', 'Contact Name')}
-                {field('email', 'Email *', 'email')}
-                {field('phone', 'Phone')}
-              </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
-              <button onClick={() => setShowForm(false)} className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancel</button>
-              <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                <Save size={14} /> {saving ? 'Saving…' : 'Save Customer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm">
@@ -109,7 +33,7 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
                 <td className="px-5 py-3 text-slate-500">{c.name || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>
-                <td className="px-5 py-3" onClick={e => { e.stopPropagation(); openEdit(c) }}>
+                <td className="px-5 py-3" onClick={e => { e.stopPropagation(); router.push('/clients') }}>
                   <span className="text-cyan-600 hover:underline text-xs font-medium cursor-pointer">Edit</span>
                 </td>
               </tr>
