@@ -8,7 +8,7 @@ import { Plus, X, Save } from 'lucide-react'
 const LEAD_SOURCE_OPTIONS = ['Google Search', 'Referral', 'Existing Customer', 'LinkedIn', 'Trade Show', 'Other']
 
 const blank = (): Partial<Client> => ({
-  name: '', company: '', email: '', phone: '',
+  name: '', company: '', email: '', phone: '', account_number: '',
   billing_address: '', billing_city: '', billing_state: 'CA', billing_zip: '',
   site_address: '', site_city: '', site_state: 'CA', site_zip: '', notes: '',
   lead_source: '', referred_by: '',
@@ -81,6 +81,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 {field('company', 'Company / Business Name')}
                 {field('email', 'Email', 'email')}
                 {field('phone', 'Phone')}
+                {field('account_number', 'Account #')}
               </div>
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Billing Address</p>
@@ -146,7 +147,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Company / Name', 'Account #', 'Email', 'Phone', 'City', ''].map(h => (
+              {['Company / Name', 'Account #', 'Email', 'Phone', 'Address', ''].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
@@ -165,7 +166,17 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 </td>
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>
-                <td className="px-5 py-3 text-slate-500">{c.billing_city || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">
+                  {c.billing_address ? (() => {
+                    const addr = [c.billing_address, c.billing_city, c.billing_state, c.billing_zip].filter(Boolean).join(', ')
+                    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(addr)}`
+                    return (
+                      <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="text-cyan-600 hover:underline text-xs">{addr}</a>
+                    )
+                  })() : <span className="text-xs text-slate-300">—</span>}
+                </td>
                 <td className="px-5 py-3" onClick={e => { e.stopPropagation(); openEdit(c) }}>
                   <span className="text-cyan-600 hover:underline text-xs font-medium">Edit</span>
                 </td>
