@@ -6,10 +6,10 @@ import { formatCurrency } from '@/lib/utils'
 import { Plus, X, Save, Pencil, Eye, EyeOff } from 'lucide-react'
 
 const CATEGORIES: { value: ItemCategory; label: string }[] = [
-  { value: 'camera',   label: 'Camera' },
-  { value: 'network',  label: 'Network / Storage' },
-  { value: 'hardware', label: 'Hardware' },
-  { value: 'labor',    label: 'Labor' },
+  { value: 'camera',   label: 'A — Cameras & Sensors' },
+  { value: 'network',  label: 'B — Network & Storage' },
+  { value: 'hardware', label: 'C — Mounting Hardware & Cabling' },
+  { value: 'labor',    label: 'D — Labor' },
   { value: 'other',    label: 'Other' },
 ]
 
@@ -129,7 +129,6 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
       <div className="space-y-5">
         {CATEGORIES.map(({ value, label }) => {
           const catItems = grouped[value] ?? []
-          if (!catItems.length) return null
           return (
             <div key={value} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="px-5 py-3 bg-slate-800">
@@ -145,6 +144,9 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
+                  {!catItems.length && (
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-xs text-slate-400">No items — click Add Item to get started</td></tr>
+                  )}
                   {catItems.map((item, i) => (
                     <tr key={item.id} className={`${i%2===0?'bg-white':'bg-slate-50/40'} ${!item.active ? 'opacity-50' : ''}`}>
                       <td className="px-4 py-2.5">
