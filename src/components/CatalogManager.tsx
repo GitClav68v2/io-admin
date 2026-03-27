@@ -26,9 +26,25 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
   const [editing, setEditing]   = useState<CatalogItem | null>(null)
   const [form, setForm]         = useState<Partial<CatalogItem>>(blank())
   const [saving, setSaving]     = useState(false)
+  const [disp, setDisp] = useState({ unit_price: '0.00', cost_price: '0.00', markup_pct: '0' })
 
-  function openNew()  { setForm(blank()); setEditing(null); setShowForm(true) }
-  function openEdit(c: CatalogItem) { setForm(c); setEditing(c); setShowForm(true) }
+  function openNew()  {
+    const b = blank()
+    setForm(b)
+    setDisp({ unit_price: '0.00', cost_price: '0.00', markup_pct: '0' })
+    setEditing(null)
+    setShowForm(true)
+  }
+  function openEdit(c: CatalogItem) {
+    setForm(c)
+    setDisp({
+      unit_price: (c.unit_price ?? 0).toFixed(2),
+      cost_price: (c.cost_price ?? 0).toFixed(2),
+      markup_pct: String(c.markup_pct ?? 0),
+    })
+    setEditing(c)
+    setShowForm(true)
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -94,9 +110,18 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Unit Price ($)</label>
-                  <input type="number" min="0" step="0.01" inputMode="decimal" value={form.unit_price ?? 0}
-                    onChange={e => setForm(f => ({...f, unit_price: parseFloat(e.target.value) || 0}))}
-                    onBlur={e => setForm(f => ({...f, unit_price: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                  <input type="text" inputMode="decimal" value={disp.unit_price}
+                    onChange={e => {
+                      const raw = e.target.value
+                      setDisp(d => ({ ...d, unit_price: raw }))
+                      const n = parseFloat(raw)
+                      if (!isNaN(n)) setForm(f => ({ ...f, unit_price: n }))
+                    }}
+                    onBlur={e => {
+                      const n = parseFloat(e.target.value) || 0
+                      setDisp(d => ({ ...d, unit_price: n.toFixed(2) }))
+                      setForm(f => ({ ...f, unit_price: n }))
+                    }}
                     onFocus={e => e.target.select()}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
@@ -108,25 +133,51 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Our Cost ($)</label>
-                  <input type="number" min="0" step="0.01" inputMode="decimal" value={form.cost_price ?? 0}
-                    onChange={e => setForm(f => ({...f, cost_price: parseFloat(e.target.value) || 0}))}
-                    onBlur={e => setForm(f => ({...f, cost_price: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                  <input type="text" inputMode="decimal" value={disp.cost_price}
+                    onChange={e => {
+                      const raw = e.target.value
+                      setDisp(d => ({ ...d, cost_price: raw }))
+                      const cost = parseFloat(raw)
+                      if (!isNaN(cost)) {
+                        const markup = form.markup_pct ?? 0
+                        const sell = parseFloat((cost * (1 + markup / 100)).toFixed(2))
+                        setForm(f => ({ ...f, cost_price: cost, unit_price: sell }))
+                        setDisp(d => ({ ...d, cost_price: raw, unit_price: sell.toFixed(2) }))
+                      }
+                    }}
+                    onBlur={e => {
+                      const n = parseFloat(e.target.value) || 0
+                      setDisp(d => ({ ...d, cost_price: n.toFixed(2) }))
+                      setForm(f => ({ ...f, cost_price: n }))
+                    }}
                     onFocus={e => e.target.select()}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Markup %</label>
-                  <input type="number" min="0" step="0.1" inputMode="decimal" value={form.markup_pct ?? 0}
-                    onChange={e => setForm(f => ({...f, markup_pct: parseFloat(e.target.value) || 0}))}
-                    onBlur={e => setForm(f => ({...f, markup_pct: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                  <input type="text" inputMode="decimal" value={disp.markup_pct}
+                    onChange={e => {
+                      const raw = e.target.value
+                      setDisp(d => ({ ...d, markup_pct: raw }))
+                      const markup = parseFloat(raw)
+                      if (!isNaN(markup)) {
+                        const cost = form.cost_price ?? 0
+                        const sell = parseFloat((cost * (1 + markup / 100)).toFixed(2))
+                        setForm(f => ({ ...f, markup_pct: markup, unit_price: sell }))
+                        setDisp(d => ({ ...d, markup_pct: raw, unit_price: sell.toFixed(2) }))
+                      }
+                    }}
+                    onBlur={e => {
+                      const n = parseFloat(e.target.value) || 0
+                      setDisp(d => ({ ...d, markup_pct: String(n) }))
+                      setForm(f => ({ ...f, markup_pct: n }))
+                    }}
                     onFocus={e => e.target.select()}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div className="col-span-2">
                   <p className="text-xs text-slate-400">
-                    Sell Price (calculated): <span className="font-semibold text-slate-600">
-                      ${((form.cost_price ?? 0) * (1 + (form.markup_pct ?? 0) / 100)).toFixed(2)}
-                    </span> — for reference only; Unit Price above is what gets saved.
+                    Unit Price auto-fills from Cost × (1 + Markup%) — override manually if needed.
                   </p>
                 </div>
               </div>
