@@ -669,10 +669,13 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             </p>
           </div>
           <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
-            {Object.entries(catalogByCategory).map(([cat, catItems]) => (
+            {(['camera','network','hardware','labor','other'] as const).filter(cat => catalogByCategory[cat]?.length).map(cat => {
+              const catItems = catalogByCategory[cat]
+              const label = cat === 'camera' ? 'Cameras & Sensors' : cat === 'network' ? 'Network & Storage' : cat === 'hardware' ? 'Hardware' : cat === 'labor' ? 'Labor' : 'Other'
+              return (
               <div key={cat}>
-                <div className="px-4 py-2 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide capitalize">
-                  {cat === 'camera' ? 'Cameras' : cat}
+                <div className="px-4 py-2 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  {label}
                 </div>
                 {catItems.map(item => (
                   <button key={item.id} onClick={() => addFromCatalog(item)}
@@ -685,7 +688,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   </button>
                 ))}
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>
