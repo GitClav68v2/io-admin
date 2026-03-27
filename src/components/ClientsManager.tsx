@@ -165,7 +165,12 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                     : <span className="text-xs text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
-                <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">
+                  {c.phone
+                    ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()}
+                        className="text-cyan-600 hover:underline">{c.phone}</a>
+                    : '—'}
+                </td>
                 <td className="px-5 py-3 text-slate-500">
                   {c.billing_address ? (() => {
                     const addr = [c.billing_address, c.billing_city, c.billing_state, c.billing_zip].filter(Boolean).join(', ')
