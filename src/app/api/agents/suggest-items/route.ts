@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { requireAuth } from '@/lib/api-auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
+  const { user, response } = await requireAuth()
+  if (response) return response
+
+  if (!checkRateLimit(`ai:${user!.id}`, 10, 60_000)) {
+    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+  }
+
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 500 })
     }
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     const { description, catalog } = await req.json()
@@ -50,8 +59,13 @@ Be realistic. Return ONLY a valid JSON array — no markdown, no explanation.`,
     const text = (message.content[0] as Anthropic.TextBlock).text.trim()
     // Strip markdown code fences if present
     const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-    const items = JSON.parse(clean)
-    return NextResponse.json({ items })
+    try {
+      const items = JSON.parse(clean)
+      if (!Array.isArray(items)) throw new Error('Expected array')
+      return NextResponse.json({ items })
+    } catch {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 500 })
+    }
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Unknown error' }, { status: 500 })
   }

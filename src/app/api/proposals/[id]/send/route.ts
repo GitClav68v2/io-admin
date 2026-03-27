@@ -4,6 +4,7 @@ import { Resend } from 'resend'
 import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer'
 import { createElement, type ReactElement, type JSXElementConstructor } from 'react'
 import ProposalPDF from '@/components/ProposalPDF'
+import { requireAuth } from '@/lib/api-auth'
 
 export const maxDuration = 60
 
@@ -14,6 +15,8 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { response: authResponse } = await requireAuth()
+  if (authResponse) return authResponse
   try {
     const { id } = await params
     const { data: proposal } = await supabase

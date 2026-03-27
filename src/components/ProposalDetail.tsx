@@ -41,8 +41,8 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
       const res = await fetch(`/api/proposals/${proposal.id}/send`, { method: 'POST' })
       const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
       if (data.success) { alert('Proposal emailed successfully!'); router.refresh() }
-      else alert('Error: ' + data.error)
-    } catch (e: any) { alert('Error sending proposal: ' + e.message) }
+      else alert('Something went wrong. Please try again.')
+    } catch { alert('Something went wrong. Please try again.') }
     setLoading(null)
   }
 

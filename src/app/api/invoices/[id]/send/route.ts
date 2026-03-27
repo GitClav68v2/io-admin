@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api-auth'
 
 export const maxDuration = 60
 import { createClient } from '@supabase/supabase-js'
@@ -14,6 +15,8 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { response: authResponse } = await requireAuth()
+  if (authResponse) return authResponse
   const { id } = await params
   const { data: invoice } = await supabase
     .from('invoices')

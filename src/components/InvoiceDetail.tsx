@@ -35,7 +35,7 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
       const res = await fetch(`/api/invoices/${invoice.id}/send`, { method: 'POST' })
       const data = await res.json()
       if (data.success) { alert('Invoice emailed!'); router.refresh() }
-      else alert('Error: ' + data.error)
+      else alert('Something went wrong. Please try again.')
     } catch {
       alert('Error sending invoice. Please try again.')
     }

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer'
 import { createElement, type ReactElement, type JSXElementConstructor } from 'react'
 import InvoicePDF from '@/components/InvoicePDF'
+import { requireAuth } from '@/lib/api-auth'
 
 export const maxDuration = 60
 
@@ -12,6 +13,8 @@ const supabase = createClient(
 )
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { response: authResponse } = await requireAuth()
+  if (authResponse) return authResponse
   try {
     const { id } = await params
     const { data: invoice } = await supabase

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/api-auth'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,6 +8,8 @@ const supabase = createClient(
 )
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { response: authResponse } = await requireAuth()
+  if (authResponse) return authResponse
   const { id } = await params
   const { data: proposal } = await supabase
     .from('proposals')

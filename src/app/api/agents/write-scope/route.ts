@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { requireAuth } from '@/lib/api-auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
+  const { user, response: authResponse } = await requireAuth()
+  if (authResponse) return authResponse
+  if (!checkRateLimit(`ai:${user!.id}`, 10, 60_000)) {
+    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+  }
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 500 })
     }
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     const { brief, clientName, siteAddress } = await req.json()
@@ -37,9 +44,13 @@ Tone: professional, clear, contractor-standard. Return ONLY valid JSON — no ma
 
     const text = (message.content[0] as Anthropic.TextBlock).text.trim()
     const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-    const result = JSON.parse(clean)
-    return NextResponse.json(result)
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message ?? 'Unknown error' }, { status: 500 })
+    try {
+      const result = JSON.parse(clean)
+      return NextResponse.json(result)
+    } catch {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 500 })
+    }
+  } catch {
+    return NextResponse.json({ error: 'Service unavailable' }, { status: 500 })
   }
 }

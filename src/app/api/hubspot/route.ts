@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api-auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function GET(req: NextRequest) {
+  const { user, response: authResponse } = await requireAuth()
+  if (authResponse) return authResponse
+  if (!checkRateLimit(`hs:${user!.id}`, 20, 60_000)) {
+    return NextResponse.json([], { status: 429 })
+  }
   const q = req.nextUrl.searchParams.get('q')?.trim()
   if (!q || q.length < 2) return NextResponse.json([])
 

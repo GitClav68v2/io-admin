@@ -70,7 +70,7 @@ export default function PortalCustomerDetail({
       const path = await uploadInvoicePDF(fd)
       setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, pdf_path: path } : inv))
     } catch (e: any) {
-      alert('Upload failed: ' + e.message)
+      alert('Upload failed. Please try again.')
     }
     setUploading(null)
   }
