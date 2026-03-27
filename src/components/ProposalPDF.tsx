@@ -265,7 +265,7 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
 
         {/* Recurring */}
         {proposal.monthly_recurring > 0 && (
-          <View style={s.recurWrap}>
+          <View style={s.recurWrap} wrap={false}>
             <Text style={s.recurLabel}>RECURRING MONTHLY SERVICES (billed directly by provider — not included in One-Time Total)</Text>
             <View style={s.recurBox}>
               <View style={s.recurRow}>
@@ -277,7 +277,7 @@ export default function ProposalPDF({ proposal }: { proposal: Proposal }) {
         )}
 
         {/* Payment Schedule */}
-        <View style={s.payWrap}>
+        <View style={s.payWrap} wrap={false}>
           <Text style={s.payTitle}>PAYMENT SCHEDULE</Text>
           {[
             ['Deposit (50%)', 'Due upon signed proposal — equipment will not be ordered until received', fmt(deposit)],
