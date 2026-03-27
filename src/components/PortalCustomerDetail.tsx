@@ -91,7 +91,10 @@ export default function PortalCustomerDetail({
             <h1 className="text-2xl font-bold text-slate-900">{client.company || client.name}</h1>
             <p className="text-slate-500 text-sm mt-1">
               {client.account_number && (
-                <span className="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded mr-2">{client.account_number}</span>
+                <span className="mr-2">
+                  <span className="text-xs text-slate-400 mr-1">Account #</span>
+                  <span className="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{client.account_number}</span>
+                </span>
               )}
               {client.name && client.company && <span className="mr-3">{client.name}</span>}
               {client.email && <span className="mr-3">{client.email}</span>}
