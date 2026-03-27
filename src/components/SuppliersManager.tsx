@@ -110,7 +110,7 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Company / Name', 'Email', 'Phone', 'Website', 'City', ''].map(h => (
+              {['Company / Name', 'Email', 'Phone', 'Website', 'Address', ''].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
@@ -122,12 +122,21 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                   <div className="font-medium text-slate-800">{s.company || s.name}</div>
                   {s.company && <div className="text-xs text-slate-400">{s.name}</div>}
                 </td>
-                <td className="px-5 py-3 text-slate-500">{s.email || '—'}</td>
-                <td className="px-5 py-3 text-slate-500">{s.phone || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">
+                  {s.email ? <a href={`mailto:${s.email}`} className="text-cyan-600 hover:underline">{s.email}</a> : '—'}
+                </td>
+                <td className="px-5 py-3 text-slate-500">
+                  {s.phone ? <a href={`tel:${s.phone.replace(/\D/g, '')}`} className="text-cyan-600 hover:underline">{s.phone}</a> : '—'}
+                </td>
                 <td className="px-5 py-3 text-slate-500">
                   {s.website ? <a href={s.website} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline">{s.website.replace(/^https?:\/\//, '')}</a> : '—'}
                 </td>
-                <td className="px-5 py-3 text-slate-500">{s.city || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">
+                  {s.address ? (() => {
+                    const addr = [s.address, s.city, s.state, s.zip].filter(Boolean).join(', ')
+                    return <a href={`https://maps.google.com/?q=${encodeURIComponent(addr)}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline text-xs">{addr}</a>
+                  })() : <span className="text-xs text-slate-300">—</span>}
+                </td>
                 <td className="px-5 py-3">
                   <button onClick={() => openEdit(s)} className="text-cyan-600 hover:underline text-xs font-medium">Edit</button>
                 </td>
