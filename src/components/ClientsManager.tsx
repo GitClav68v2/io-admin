@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Client } from '@/lib/types'
 import { Plus, X, Save } from 'lucide-react'
-import Link from 'next/link'
 
 const blank = (): Partial<Client> => ({
   name: '', company: '', email: '', phone: '',
@@ -131,21 +130,21 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
           </thead>
           <tbody className="divide-y divide-slate-50">
             {clients.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+              <tr key={c.id} className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => router.push(`/portal/${c.id}`)}>
                 <td className="px-5 py-3">
                   <div className="font-medium text-slate-800">{c.company || c.name}</div>
                   {c.company && <div className="text-xs text-slate-400">{c.name}</div>}
                 </td>
                 <td className="px-5 py-3">
                   {c.account_number
-                    ? <Link href={`/portal/${c.id}`} onClick={e => e.stopPropagation()} className="font-mono text-xs bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded hover:bg-cyan-100 transition-colors">{c.account_number}</Link>
+                    ? <span className="font-mono text-xs bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded">{c.account_number}</span>
                     : <span className="text-xs text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.billing_city || '—'}</td>
-                <td className="px-5 py-3">
-                  <button onClick={() => openEdit(c)} className="text-cyan-600 hover:underline text-xs font-medium">Edit</button>
+                <td className="px-5 py-3" onClick={e => { e.stopPropagation(); openEdit(c) }}>
+                  <span className="text-cyan-600 hover:underline text-xs font-medium">Edit</span>
                 </td>
               </tr>
             ))}

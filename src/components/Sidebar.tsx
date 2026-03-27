@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LayoutDashboard, Users, FileText, Receipt, Package, Truck, Building2, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, Receipt, Package, Truck, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const nav = [
@@ -12,8 +12,7 @@ const nav = [
   { href: '/proposals', label: 'Proposals',  icon: FileText },
   { href: '/invoices',  label: 'Invoices',   icon: Receipt },
   { href: '/catalog',   label: 'Catalog',    icon: Package },
-  { href: '/suppliers', label: 'OEM Suppliers',    icon: Truck },
-  { href: '/portal',    label: 'Customer Portal',  icon: Building2 },
+  { href: '/suppliers', label: 'OEM Suppliers', icon: Truck },
 ]
 
 export default function Sidebar() {
