@@ -11,6 +11,10 @@ export interface Client {
   email: string | null
   phone: string | null
   account_number: string | null
+  corporate_address: string | null
+  corporate_city: string | null
+  corporate_state: string | null
+  corporate_zip: string | null
   billing_address: string | null
   billing_city: string | null
   billing_state: string | null

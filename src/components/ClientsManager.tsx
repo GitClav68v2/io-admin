@@ -9,6 +9,7 @@ const LEAD_SOURCE_OPTIONS = ['Google Search', 'Referral', 'Existing Customer', '
 
 const blank = (): Partial<Client> => ({
   name: '', company: '', email: '', phone: '', account_number: '',
+  corporate_address: '', corporate_city: '', corporate_state: 'CA', corporate_zip: '',
   billing_address: '', billing_city: '', billing_state: 'CA', billing_zip: '',
   site_address: '', site_city: '', site_state: 'CA', site_zip: '', notes: '',
   lead_source: '', referred_by: '',
@@ -22,9 +23,19 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
   const [editing, setEditing]     = useState<Client | null>(null)
   const [form, setForm]           = useState<Partial<Client>>(blank())
   const [saving, setSaving]       = useState(false)
+  const [billingSame, setBillingSame] = useState(false)
 
-  function openNew()  { setForm(blank()); setEditing(null); setShowForm(true) }
-  function openEdit(c: Client) { setForm(c); setEditing(c); setShowForm(true) }
+  function openNew()  { setForm(blank()); setEditing(null); setBillingSame(false); setShowForm(true) }
+  function openEdit(c: Client) {
+    setForm(c)
+    setEditing(c)
+    setBillingSame(
+      !!c.corporate_address && c.billing_address === c.corporate_address &&
+      c.billing_city === c.corporate_city && c.billing_state === c.corporate_state &&
+      c.billing_zip === c.corporate_zip
+    )
+    setShowForm(true)
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -84,15 +95,43 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 {field('account_number', 'Account #')}
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Billing Address</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Corporate Address</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">{field('billing_address', 'Street')}</div>
-                  {field('billing_city', 'City')}
+                  <div className="col-span-2">{field('corporate_address', 'Street')}</div>
+                  {field('corporate_city', 'City')}
                   <div className="grid grid-cols-2 gap-2">
-                    {field('billing_state', 'State')}
-                    {field('billing_zip', 'ZIP')}
+                    {field('corporate_state', 'State')}
+                    {field('corporate_zip', 'ZIP')}
                   </div>
                 </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Billing Address</p>
+                  <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                    <input type="checkbox" checked={billingSame} onChange={e => {
+                      setBillingSame(e.target.checked)
+                      if (e.target.checked) setForm(f => ({
+                        ...f,
+                        billing_address: f.corporate_address ?? '',
+                        billing_city:    f.corporate_city    ?? '',
+                        billing_state:   f.corporate_state   ?? 'CA',
+                        billing_zip:     f.corporate_zip     ?? '',
+                      }))
+                    }} />
+                    Same as corporate address
+                  </label>
+                </div>
+                {!billingSame && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">{field('billing_address', 'Street')}</div>
+                    {field('billing_city', 'City')}
+                    <div className="grid grid-cols-2 gap-2">
+                      {field('billing_state', 'State')}
+                      {field('billing_zip', 'ZIP')}
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Job Site Address (if different)</p>
