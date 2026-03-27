@@ -460,22 +460,28 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                 Same as billing
               </label>
             </div>
-            {!siteSameAsBilling && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <input className="input" placeholder="Street address" value={siteAddress}
-                    onChange={e => setSiteAddress(e.target.value)} />
-                </div>
-                <input className="input" placeholder="City" value={siteCity}
-                  onChange={e => setSiteCity(e.target.value)} />
-                <div className="grid grid-cols-2 gap-2">
-                  <input className="input" placeholder="State" value={siteState}
-                    onChange={e => setSiteState(e.target.value)} />
-                  <input className="input" placeholder="ZIP" value={siteZip}
-                    onChange={e => setSiteZip(e.target.value)} />
-                </div>
+            <div className={`grid grid-cols-2 gap-4 ${siteSameAsBilling ? 'opacity-50' : ''}`}>
+              <div className="col-span-2">
+                <input className="input" placeholder="Street address"
+                  value={siteSameAsBilling ? billTo.address : siteAddress}
+                  disabled={siteSameAsBilling}
+                  onChange={e => setSiteAddress(e.target.value)} />
               </div>
-            )}
+              <input className="input" placeholder="City"
+                value={siteSameAsBilling ? billTo.city : siteCity}
+                disabled={siteSameAsBilling}
+                onChange={e => setSiteCity(e.target.value)} />
+              <div className="grid grid-cols-2 gap-2">
+                <input className="input" placeholder="State"
+                  value={siteSameAsBilling ? billTo.state : siteState}
+                  disabled={siteSameAsBilling}
+                  onChange={e => setSiteState(e.target.value)} />
+                <input className="input" placeholder="ZIP"
+                  value={siteSameAsBilling ? billTo.zip : siteZip}
+                  disabled={siteSameAsBilling}
+                  onChange={e => setSiteZip(e.target.value)} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -516,9 +522,9 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="px-4 py-2 text-left text-xs text-slate-500 w-[38%]">Description</th>
-                  <th className="px-2 py-2 text-left text-xs text-slate-500 w-[10%]">Qty</th>
-                  <th className="px-2 py-2 text-left text-xs text-slate-500 w-[8%]">Unit</th>
-                  <th className="px-2 py-2 text-left text-xs text-slate-500 w-[14%]">Unit Price</th>
+                  <th className="px-2 py-2 text-center text-xs text-slate-500 w-[10%]">Qty</th>
+                  <th className="px-2 py-2 text-center text-xs text-slate-500 w-[8%]">Unit</th>
+                  <th className="px-2 py-2 text-right text-xs text-slate-500 w-[14%]">Unit Price</th>
                   <th className="px-2 py-2 text-right text-xs text-slate-500 w-[14%]">Total</th>
                   <th className="px-2 py-2 w-[8%]"></th>
                 </tr>
@@ -544,8 +550,11 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                         value={li.unit_label} onChange={e => updateItem(li.id, 'unit_label', e.target.value)} />
                     </td>
                     <td className="px-2 py-2">
-                      <input className="input-sm w-full text-right" type="number" min="0" step="0.01"
-                        value={li.unit_price} onChange={e => updateItem(li.id, 'unit_price', parseFloat(e.target.value) || 0)} />
+                      <div className="flex items-center justify-end gap-0.5">
+                        <span className="text-slate-400 text-xs">$</span>
+                        <input className="input-sm text-right" style={{ width: 'calc(100% - 12px)' }} type="number" min="0" step="0.01"
+                          value={li.unit_price} onChange={e => updateItem(li.id, 'unit_price', parseFloat(e.target.value) || 0)} />
+                      </div>
                     </td>
                     <td className="px-2 py-2 text-right font-semibold text-slate-700">
                       {formatCurrency(li.qty * li.unit_price)}
