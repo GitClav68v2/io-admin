@@ -93,8 +93,9 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Unit Price ($)</label>
-                  <input type="number" min="0" step="0.01" value={form.unit_price ?? 0}
+                  <input type="number" min="0" step="0.01" inputMode="decimal" value={form.unit_price ?? 0}
                     onChange={e => setForm(f => ({...f, unit_price: parseFloat(e.target.value) || 0}))}
+                    onBlur={e => setForm(f => ({...f, unit_price: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div>
