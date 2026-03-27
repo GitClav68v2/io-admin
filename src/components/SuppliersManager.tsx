@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Supplier } from '@/lib/types'
-import { Plus, X, Save, Phone } from 'lucide-react'
+import { Plus, X, Save } from 'lucide-react'
 
 const blank = (): Partial<Supplier> => ({
   name: '', company: '', email: '', phone: '',
@@ -157,8 +157,8 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
           <tbody className="divide-y divide-slate-50">
             {suppliers.map(s => (
               <tr key={s.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-3">
-                  <div className="font-medium text-slate-800">{s.company || s.name}</div>
+                <td className="px-5 py-3 cursor-pointer" onClick={() => openEdit(s)}>
+                  <div className="font-medium text-cyan-600 hover:underline">{s.company || s.name}</div>
                   {s.company && <div className="text-xs text-slate-400">{s.name}</div>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">
@@ -166,10 +166,7 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                 </td>
                 <td className="px-5 py-3">
                   {s.phone
-                    ? <span onClick={() => { window.location.href = `tel:${s.phone!.replace(/\D/g, '')}` }}
-                        className="flex items-center gap-1 text-cyan-600 hover:underline font-medium cursor-pointer w-fit">
-                        <Phone size={12} />{s.phone}
-                      </span>
+                    ? <a href={`tel:${s.phone.replace(/\D/g, '')}`} className="text-cyan-600 hover:underline font-medium">{s.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">

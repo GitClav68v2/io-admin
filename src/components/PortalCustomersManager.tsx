@@ -1,7 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import { Client } from '@/lib/types'
-import { Plus, Phone } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 export default function PortalCustomersManager({ initialCustomers }: { initialCustomers: Client[] }) {
   const router = useRouter()
@@ -34,10 +34,7 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3">
                   {c.phone
-                    ? <span onClick={() => { window.location.href = `tel:${c.phone!.replace(/\D/g, '')}` }}
-                        className="flex items-center gap-1 text-cyan-600 hover:underline font-medium cursor-pointer w-fit">
-                        <Phone size={12} />{c.phone}
-                      </span>
+                    ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3" onClick={e => { e.stopPropagation(); router.push('/clients') }}>
