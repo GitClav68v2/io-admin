@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { PromoCode } from '@/lib/types'
 import { Plus, X, Save } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatCurrency } from '@/lib/utils'
 
 const blank = (): Partial<PromoCode> => ({
   code: '',
@@ -157,7 +157,7 @@ export default function PromoManager({ initialPromos }: { initialPromos: PromoCo
                 <td className="px-5 py-3 font-mono font-semibold text-slate-800">{p.code}</td>
                 <td className="px-5 py-3 text-slate-500 capitalize">{p.type}</td>
                 <td className="px-5 py-3 text-slate-700 font-medium">
-                  {p.type === 'percentage' ? `${p.value}%` : `$${p.value.toFixed(2)}`}
+                  {p.type === 'percentage' ? `${p.value}%` : formatCurrency(p.value)}
                 </td>
                 <td className="px-5 py-3 text-slate-500">{p.expiry_date ? formatDate(p.expiry_date) : '—'}</td>
                 <td className="px-5 py-3 text-slate-500">

@@ -899,7 +899,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                           <div className="text-xs text-slate-400">{item.section} · {item.description}</div>
                         </div>
                         <div className="text-right ml-4 shrink-0">
-                          <div className="text-sm font-semibold text-slate-700">{item.qty} × ${item.unit_price}</div>
+                          <div className="text-sm font-semibold text-slate-700">{item.qty} × {formatCurrency(item.unit_price)}</div>
                           <div className="text-xs text-slate-400">{item.unit_label}</div>
                         </div>
                       </div>
