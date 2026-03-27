@@ -17,6 +17,7 @@ interface LineItemDraft {
   qty: number
   unit_label: string
   unit_price: number
+  unit_price_raw: string
   taxable: boolean
   is_recurring: boolean
   recurring_label: string
@@ -105,6 +106,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
     id: li.id, catalog_item_id: li.catalog_item_id, section: li.section,
     sort_order: li.sort_order, name: li.name, description: li.description ?? '',
     sku: li.sku ?? '', qty: li.qty, unit_label: li.unit_label, unit_price: li.unit_price,
+    unit_price_raw: li.unit_price.toFixed(2),
     taxable: li.taxable, is_recurring: li.is_recurring, recurring_label: li.recurring_label ?? '',
   }))
   const [items, setItems] = useState<LineItemDraft[]>(initItems)
@@ -191,6 +193,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       sort_order: items.length,
       name: s.name, description: s.description, sku: s.sku,
       qty: s.qty, unit_label: s.unit_label, unit_price: s.unit_price,
+      unit_price_raw: (s.unit_price ?? 0).toFixed(2),
       taxable: s.taxable, is_recurring: false, recurring_label: '',
     }))
     setItems(prev => [...prev, ...newItems])
@@ -286,6 +289,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
         sku: item.sku ?? '',
         unit_label: item.unit_label,
         unit_price: item.unit_price,
+        unit_price_raw: item.unit_price.toFixed(2),
         taxable: item.taxable,
       } : li))
       setActiveRowId(null)
@@ -297,6 +301,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
         name: item.name, description: item.description ?? '',
         sku: item.sku ?? '', qty: 1,
         unit_label: item.unit_label, unit_price: item.unit_price,
+        unit_price_raw: item.unit_price.toFixed(2),
         taxable: item.taxable, is_recurring: false, recurring_label: '',
       }])
     }
@@ -308,7 +313,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       id, catalog_item_id: null, section, sort_order: prev.length,
       name: '', description: '', sku: '', qty: 1,
       unit_label: section === 'labor' ? 'hr' : 'ea',
-      unit_price: 0, taxable: section !== 'labor', is_recurring: false, recurring_label: '',
+      unit_price: 0, unit_price_raw: '0.00', taxable: section !== 'labor', is_recurring: false, recurring_label: '',
     }])
     setActiveRowId(id)
   }
@@ -617,8 +622,20 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                     <td className="px-2 py-2">
                       <div className="flex items-center justify-end gap-0.5">
                         <span className="text-slate-400 text-xs">$</span>
-                        <input className="input-sm text-right" style={{ width: 'calc(100% - 12px)' }} type="number" min="0" step="0.01"
-                          value={li.unit_price} onChange={e => updateItem(li.id, 'unit_price', parseFloat(e.target.value) || 0)} />
+                        <input className="input-sm text-right" style={{ width: 'calc(100% - 12px)' }} type="text" inputMode="decimal"
+                          value={li.unit_price_raw ?? li.unit_price.toFixed(2)}
+                          onChange={e => {
+                            const raw = e.target.value
+                            updateItem(li.id, 'unit_price_raw', raw)
+                            const n = parseFloat(raw)
+                            if (!isNaN(n)) updateItem(li.id, 'unit_price', n)
+                          }}
+                          onBlur={e => {
+                            const n = parseFloat(e.target.value) || 0
+                            updateItem(li.id, 'unit_price', n)
+                            updateItem(li.id, 'unit_price_raw', n.toFixed(2))
+                          }}
+                          onFocus={e => e.target.select()} />
                       </div>
                     </td>
                     <td className="px-2 py-2 text-right font-semibold text-slate-700">
