@@ -10,6 +10,7 @@ export interface Client {
   company: string | null
   email: string | null
   phone: string | null
+  account_number: string | null
   billing_address: string | null
   billing_city: string | null
   billing_state: string | null
@@ -21,23 +22,13 @@ export interface Client {
   notes: string | null
 }
 
-// ── Portal (customer-facing) types ────────────────────────────
-export interface PortalCustomer {
-  id: string
-  created_at: string
-  account_number: string
-  business_name: string
-  contact_name: string | null
-  email: string
-  phone: string | null
-}
-
+// ── Portal invoice types ───────────────────────────────────────
 export type PortalInvoiceStatus = 'unpaid' | 'partial' | 'paid'
 
 export interface PortalInvoice {
   id: string
   created_at: string
-  customer_id: string
+  client_id: string
   invoice_number: string
   invoice_date: string
   due_date: string | null

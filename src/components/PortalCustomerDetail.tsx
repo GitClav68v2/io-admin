@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { PortalCustomer, PortalInvoice, PortalInvoiceStatus } from '@/lib/types'
+import { Client, PortalInvoice, PortalInvoiceStatus } from '@/lib/types'
 import { addPortalInvoice, uploadInvoicePDF } from '@/app/(dashboard)/portal/actions'
 import { ArrowLeft, Upload } from 'lucide-react'
 
@@ -19,9 +19,9 @@ const statusColor = (s: string) =>
   'text-red-500 bg-red-50'
 
 export default function PortalCustomerDetail({
-  customer, initialInvoices
+  client, initialInvoices
 }: {
-  customer: PortalCustomer
+  client: Client
   initialInvoices: PortalInvoice[]
 }) {
   const router = useRouter()
@@ -44,7 +44,7 @@ export default function PortalCustomerDetail({
     setSaving(true)
     setError('')
     try {
-      const data = await addPortalInvoice(customer.id, {
+      const data = await addPortalInvoice(client.id, {
         invoice_number: form.invoice_number,
         invoice_date: form.invoice_date,
         due_date: form.due_date || null,
@@ -65,7 +65,7 @@ export default function PortalCustomerDetail({
     try {
       const fd = new FormData()
       fd.append('file', file)
-      fd.append('customerId', customer.id)
+      fd.append('customerId', client.id)
       fd.append('invoiceId', invoiceId)
       const path = await uploadInvoicePDF(fd)
       setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, pdf_path: path } : inv))
@@ -85,22 +85,22 @@ export default function PortalCustomerDetail({
         <ArrowLeft size={15} /> Back to Customers
       </button>
 
-      {/* Customer header */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{customer.business_name}</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{client.company || client.name}</h1>
             <p className="text-slate-500 text-sm mt-1">
-              <span className="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded mr-2">{customer.account_number}</span>
-              {customer.contact_name && <span className="mr-3">{customer.contact_name}</span>}
-              <span className="mr-3">{customer.email}</span>
-              {customer.phone && <span>{customer.phone}</span>}
+              {client.account_number && (
+                <span className="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded mr-2">{client.account_number}</span>
+              )}
+              {client.name && client.company && <span className="mr-3">{client.name}</span>}
+              {client.email && <span className="mr-3">{client.email}</span>}
+              {client.phone && <span>{client.phone}</span>}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Add Invoice */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
         <h2 className="text-base font-semibold text-slate-900 mb-4">Add Invoice</h2>
         <form onSubmit={handleAddInvoice}
@@ -135,7 +135,6 @@ export default function PortalCustomerDetail({
         </form>
       </div>
 
-      {/* Invoice table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">

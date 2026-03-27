@@ -1,25 +1,25 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { PortalCustomer } from '@/lib/types'
+import { Client } from '@/lib/types'
 import { addPortalCustomer, updatePortalCustomer } from '@/app/(dashboard)/portal/actions'
 import { Plus, X, Save } from 'lucide-react'
 
-const blank = (): Partial<PortalCustomer> => ({
-  business_name: '', contact_name: '', email: '', phone: '',
+const blank = (): Partial<Client> => ({
+  company: '', name: '', email: '', phone: '',
 })
 
-export default function PortalCustomersManager({ initialCustomers }: { initialCustomers: PortalCustomer[] }) {
+export default function PortalCustomersManager({ initialCustomers }: { initialCustomers: Client[] }) {
   const router = useRouter()
   const [customers, setCustomers] = useState(initialCustomers)
   const [showForm, setShowForm]   = useState(false)
-  const [editing, setEditing]     = useState<PortalCustomer | null>(null)
-  const [form, setForm]           = useState<Partial<PortalCustomer>>(blank())
+  const [editing, setEditing]     = useState<Client | null>(null)
+  const [form, setForm]           = useState<Partial<Client>>(blank())
   const [saving, setSaving]       = useState(false)
   const [error, setError]         = useState('')
 
   function openNew()  { setForm(blank()); setEditing(null); setShowForm(true); setError('') }
-  function openEdit(c: PortalCustomer) { setForm(c); setEditing(c); setShowForm(true); setError('') }
+  function openEdit(c: Client) { setForm(c); setEditing(c); setShowForm(true); setError('') }
 
   async function handleSave() {
     setSaving(true)
@@ -44,7 +44,7 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
     return d.slice(0,3) + '-' + d.slice(3,6) + '-' + d.slice(6)
   }
 
-  function field(key: keyof PortalCustomer, label: string, type = 'text') {
+  function field(key: keyof Client, label: string, type = 'text') {
     return (
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1">{label}</label>
@@ -74,8 +74,8 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {field('business_name', 'Business Name *')}
-                {field('contact_name', 'Contact Name')}
+                {field('company', 'Business Name *')}
+                {field('name', 'Contact Name')}
                 {field('email', 'Email *', 'email')}
                 {field('phone', 'Phone')}
               </div>
@@ -105,16 +105,16 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
             {customers.map(c => (
               <tr key={c.id} className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => router.push(`/portal/${c.id}`)}>
                 <td className="px-5 py-3 font-mono text-xs text-slate-500">{c.account_number}</td>
-                <td className="px-5 py-3 font-medium text-slate-800">{c.business_name}</td>
-                <td className="px-5 py-3 text-slate-500">{c.contact_name || '—'}</td>
-                <td className="px-5 py-3 text-slate-500">{c.email}</td>
+                <td className="px-5 py-3 font-medium text-slate-800">{c.company || c.name}</td>
+                <td className="px-5 py-3 text-slate-500">{c.name || '—'}</td>
+                <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>
                 <td className="px-5 py-3" onClick={e => { e.stopPropagation(); openEdit(c) }}>
                   <span className="text-cyan-600 hover:underline text-xs font-medium cursor-pointer">Edit</span>
                 </td>
               </tr>
             ))}
-            {!customers.length && <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No customers yet</td></tr>}
+            {!customers.length && <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No portal customers yet</td></tr>}
           </tbody>
         </table>
       </div>

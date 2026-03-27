@@ -124,7 +124,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Company / Name', 'Email', 'Phone', 'City', ''].map(h => (
+              {['Company / Name', 'Account #', 'Email', 'Phone', 'City', ''].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
@@ -136,6 +136,11 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                   <div className="font-medium text-slate-800">{c.company || c.name}</div>
                   {c.company && <div className="text-xs text-slate-400">{c.name}</div>}
                 </td>
+                <td className="px-5 py-3">
+                  {c.account_number
+                    ? <Link href={`/portal/${c.id}`} onClick={e => e.stopPropagation()} className="font-mono text-xs bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded hover:bg-cyan-100 transition-colors">{c.account_number}</Link>
+                    : <span className="text-xs text-slate-300">—</span>}
+                </td>
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.phone || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{c.billing_city || '—'}</td>
@@ -144,7 +149,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 </td>
               </tr>
             ))}
-            {!clients.length && <tr><td colSpan={5} className="px-5 py-12 text-center text-slate-400">No clients yet</td></tr>}
+            {!clients.length && <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No clients yet</td></tr>}
           </tbody>
         </table>
       </div>

@@ -6,10 +6,10 @@ import { notFound } from 'next/navigation'
 export default async function PortalCustomerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const db = createPortalAdmin()
-  const [{ data: customer }, { data: invoices }] = await Promise.all([
-    db.from('customers').select('*').eq('id', id).single(),
-    db.from('invoices').select('*').eq('customer_id', id).order('invoice_date', { ascending: false })
+  const [{ data: client }, { data: invoices }] = await Promise.all([
+    db.from('clients').select('*').eq('id', id).single(),
+    db.from('portal_invoices').select('*').eq('client_id', id).order('invoice_date', { ascending: false })
   ])
-  if (!customer) notFound()
-  return <PortalCustomerDetail customer={customer} initialInvoices={invoices ?? []} />
+  if (!client) notFound()
+  return <PortalCustomerDetail client={client} initialInvoices={invoices ?? []} />
 }
