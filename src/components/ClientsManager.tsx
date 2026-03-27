@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Client, ClientSite } from '@/lib/types'
-import { Plus, X, Save, Trash2 } from 'lucide-react'
+import { Plus, X, Save, Trash2, Phone } from 'lucide-react'
 
 const LEAD_SOURCE_OPTIONS = ['Google Search', 'Referral', 'Existing Customer', 'LinkedIn', 'Trade Show', 'Other']
 
@@ -302,7 +302,9 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 <td className="px-5 py-3">
                   {c.phone
                     ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()}
-                        className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
+                        className="flex items-center gap-1 text-cyan-600 hover:underline font-medium w-fit">
+                        <Phone size={12} />{c.phone}
+                      </a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">

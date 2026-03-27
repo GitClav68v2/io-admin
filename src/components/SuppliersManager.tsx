@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Supplier } from '@/lib/types'
-import { Plus, X, Save } from 'lucide-react'
+import { Plus, X, Save, Phone } from 'lucide-react'
 
 const blank = (): Partial<Supplier> => ({
   name: '', company: '', email: '', phone: '',
@@ -164,8 +164,12 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                 <td className="px-5 py-3 text-slate-500">
                   {s.email ? <a href={`mailto:${s.email}`} className="text-cyan-600 hover:underline">{s.email}</a> : '—'}
                 </td>
-                <td className="px-5 py-3 text-slate-500">
-                  {s.phone ? <a href={`tel:${s.phone.replace(/\D/g, '')}`} className="text-cyan-600 hover:underline">{s.phone}</a> : '—'}
+                <td className="px-5 py-3">
+                  {s.phone
+                    ? <a href={`tel:${s.phone.replace(/\D/g, '')}`} className="flex items-center gap-1 text-cyan-600 hover:underline font-medium w-fit">
+                        <Phone size={12} />{s.phone}
+                      </a>
+                    : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">
                   {s.website ? <a href={s.website} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline">{s.website.replace(/^https?:\/\//, '')}</a> : '—'}
