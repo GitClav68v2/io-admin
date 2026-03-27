@@ -97,6 +97,7 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                   <input type="number" min="0" step="0.01" inputMode="decimal" value={form.unit_price ?? 0}
                     onChange={e => setForm(f => ({...f, unit_price: parseFloat(e.target.value) || 0}))}
                     onBlur={e => setForm(f => ({...f, unit_price: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                    onFocus={e => e.target.select()}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div>
@@ -110,6 +111,7 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                   <input type="number" min="0" step="0.01" inputMode="decimal" value={form.cost_price ?? 0}
                     onChange={e => setForm(f => ({...f, cost_price: parseFloat(e.target.value) || 0}))}
                     onBlur={e => setForm(f => ({...f, cost_price: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                    onFocus={e => e.target.select()}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div>
@@ -117,6 +119,7 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                   <input type="number" min="0" step="0.1" inputMode="decimal" value={form.markup_pct ?? 0}
                     onChange={e => setForm(f => ({...f, markup_pct: parseFloat(e.target.value) || 0}))}
                     onBlur={e => setForm(f => ({...f, markup_pct: parseFloat(parseFloat(e.target.value || '0').toFixed(2))}))}
+                    onFocus={e => e.target.select()}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
                 <div className="col-span-2">

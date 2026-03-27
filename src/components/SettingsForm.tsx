@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { CompanySettings } from '@/lib/types'
 import { Save } from 'lucide-react'
 
 export default function SettingsForm({ settings }: { settings: CompanySettings }) {
-  const supabase = createClient()
   const [form, setForm] = useState({
     address:        settings.address        ?? '',
     phone:          settings.phone          ?? '',
@@ -25,12 +23,14 @@ export default function SettingsForm({ settings }: { settings: CompanySettings }
     setSaving(true)
     setSaved(false)
     setError(null)
-    const { error: err } = await supabase
-      .from('company_settings')
-      .update({ ...form, updated_at: new Date().toISOString() })
-      .eq('id', settings.id)
+    const res = await fetch('/api/settings/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+    const data = await res.json()
     setSaving(false)
-    if (err) { setError(err.message) } else { setSaved(true) }
+    if (!res.ok) { setError(data.error ?? 'Save failed') } else { setSaved(true) }
   }
 
   function field(key: keyof typeof form, label: string, type = 'text', placeholder = '') {
