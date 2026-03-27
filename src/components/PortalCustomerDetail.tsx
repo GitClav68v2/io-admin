@@ -125,8 +125,8 @@ export default function PortalCustomerDetail({
           <div><label className={labelCls}>Invoice #</label><input value={form.invoice_number} onChange={e => setForm(f => ({ ...f, invoice_number: e.target.value }))} required className={inputCls} /></div>
           <div><label className={labelCls}>Invoice Date</label><input type="date" value={form.invoice_date} onChange={e => setForm(f => ({ ...f, invoice_date: e.target.value }))} required className={inputCls} /></div>
           <div><label className={labelCls}>Due Date</label><input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className={inputCls} /></div>
-          <div><label className={labelCls}>Total $</label><input value={form.amount_total} onChange={e => setForm(f => ({ ...f, amount_total: formatCurrency(e.target.value) }))} required placeholder="0.00" className={inputCls} /></div>
-          <div><label className={labelCls}>Paid $</label><input value={form.amount_paid} onChange={e => setForm(f => ({ ...f, amount_paid: formatCurrency(e.target.value) }))} placeholder="0.00" className={inputCls} /></div>
+          <div><label className={labelCls}>Total $</label><input value={form.amount_total} onChange={e => setForm(f => ({ ...f, amount_total: formatCurrency(e.target.value) }))} onBlur={e => { const n = parseFloat(e.target.value.replace(/,/g, '')); if (!isNaN(n)) setForm(f => ({ ...f, amount_total: n.toFixed(2) })) }} required placeholder="0.00" className={inputCls} /></div>
+          <div><label className={labelCls}>Paid $</label><input value={form.amount_paid} onChange={e => setForm(f => ({ ...f, amount_paid: formatCurrency(e.target.value) }))} onBlur={e => { const n = parseFloat(e.target.value.replace(/,/g, '')); if (!isNaN(n)) setForm(f => ({ ...f, amount_paid: n.toFixed(2) })) }} placeholder="0.00" className={inputCls} /></div>
           <div><label className={labelCls}>Status</label>
             <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as PortalInvoiceStatus }))} className={inputCls}>
               <option value="unpaid">Unpaid</option>
