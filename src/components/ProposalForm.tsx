@@ -674,7 +674,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               const label = cat === 'camera' ? 'Cameras & Sensors' : cat === 'network' ? 'Network & Storage' : cat === 'hardware' ? 'Hardware' : cat === 'labor' ? 'Labor' : 'Other'
               return (
               <div key={cat}>
-                <div className="px-4 py-2 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <div className="px-4 py-2 bg-slate-200 text-xs font-semibold text-slate-700 uppercase tracking-wide">
                   {label}
                 </div>
                 {catItems.map(item => (
