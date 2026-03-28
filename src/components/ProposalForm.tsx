@@ -79,6 +79,18 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
     setMonthlyDisplay(n > 0 ? n.toFixed(2) : '')
   }
   const [taxRate, setTaxRate]           = useState(proposal?.tax_rate ?? TAX_RATE)
+  const [taxRateDisplay, setTaxRateDisplay] = useState<string>(
+    proposal?.tax_rate != null ? (proposal.tax_rate * 100).toString() : (TAX_RATE * 100).toString()
+  )
+  function handleTaxRateBlur() {
+    const pct = parseFloat(taxRateDisplay)
+    if (!isNaN(pct) && pct >= 0) {
+      setTaxRate(pct / 100)
+      setTaxRateDisplay(pct.toString())
+    } else {
+      setTaxRateDisplay((taxRate * 100).toString())
+    }
+  }
   const [notes, setNotes]               = useState(proposal?.notes ?? '')
   const [conditionalInspection, setConditionalInspection] = useState<boolean>(proposal?.conditional_inspection ?? false)
   const [inspectionClause, setInspectionClause]           = useState<string>(proposal?.inspection_clause ?? '')
@@ -96,7 +108,10 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   })
 
   const [siteSameAsBilling, setSiteSameAsBilling] = useState(false)
-  const [siteAddress, setSiteAddress] = useState(proposal?.site_address ?? '')
+  const SITE_DELIM = '|||'
+  const _siteparts = (proposal?.site_address ?? '').split(SITE_DELIM)
+  const [siteAddress, setSiteAddress] = useState(_siteparts[0] ?? '')
+  const [extraSites, setExtraSites]   = useState<string[]>(_siteparts.slice(1))
   const [siteCity, setSiteCity]       = useState(proposal?.site_city ?? '')
   const [siteState, setSiteState]     = useState(proposal?.site_state ?? 'CA')
   const [siteZip, setSiteZip]         = useState(proposal?.site_zip ?? '')
@@ -348,7 +363,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       bill_to_email: billTo.email, bill_to_phone: billTo.phone,
       bill_to_address: billTo.address, bill_to_city: billTo.city,
       bill_to_state: billTo.state, bill_to_zip: billTo.zip,
-      site_address: siteSameAsBilling ? billTo.address : siteAddress,
+      site_address: siteSameAsBilling ? billTo.address : [siteAddress, ...extraSites.filter(s => s.trim())].join(SITE_DELIM),
       site_city:    siteSameAsBilling ? billTo.city    : siteCity,
       site_state:   siteSameAsBilling ? billTo.state   : siteState,
       site_zip:     siteSameAsBilling ? billTo.zip     : siteZip,
@@ -552,6 +567,21 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   onChange={e => setSiteZip(e.target.value)} />
               </div>
             </div>
+            {!siteSameAsBilling && (<>
+              {extraSites.map((site, i) => (
+                <div key={i} className="flex gap-2 mt-2">
+                  <input className="input flex-1" placeholder={`Additional site — full address`}
+                    value={site}
+                    onChange={e => { const u = [...extraSites]; u[i] = e.target.value; setExtraSites(u) }} />
+                  <button type="button" onClick={() => setExtraSites(extraSites.filter((_, j) => j !== i))}
+                    className="text-slate-400 hover:text-red-500 px-1 text-lg leading-none">×</button>
+                </div>
+              ))}
+              <button type="button" onClick={() => setExtraSites([...extraSites, ''])}
+                className="text-xs text-cyan-600 hover:text-cyan-500 mt-2 flex items-center gap-1">
+                <Plus size={12} /> Add job site
+              </button>
+            </>)}
           </div>
         </div>
 
@@ -670,9 +700,12 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                 onBlur={handleMonthlyBlur} />
             </div>
             <div>
-              <label className="label">Tax Rate</label>
-              <input className="input" type="number" min="0" max="1" step="0.0001"
-                value={taxRate} onChange={e => setTaxRate(parseFloat(e.target.value) || 0)} />
+              <label className="label">Tax Rate (%)</label>
+              <input className="input" type="text" inputMode="decimal"
+                value={taxRateDisplay}
+                onChange={e => setTaxRateDisplay(e.target.value)}
+                onBlur={handleTaxRateBlur}
+                placeholder="e.g. 8.25" />
               <p className="text-xs text-slate-400 mt-1">{(taxRate * 100).toFixed(2)}% — applies to taxable items only</p>
             </div>
             <div className="col-span-2">
