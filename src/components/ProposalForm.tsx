@@ -540,18 +540,21 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               <input className="input" value={billTo.address}
                 onChange={e => setBillTo(b => ({ ...b, address: e.target.value }))} />
             </div>
-            <div><input className="input" placeholder="City" value={billTo.city}
-              onChange={e => setBillTo(b => ({ ...b, city: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <input className="input" placeholder="State" value={billTo.state}
-                onChange={e => setBillTo(b => ({ ...b, state: e.target.value }))} />
-              <input className="input" placeholder="ZIP" value={billTo.zip}
+            <div className="col-span-2 flex gap-2">
+              <input className="input w-28 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+                autoComplete="one-time-code" maxLength={5} value={billTo.zip}
                 onChange={async e => {
-                  const zip = e.target.value
+                  const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
                   setBillTo(b => ({ ...b, zip }))
-                  const loc = await lookupZip(zip)
-                  if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state }))
-                }} />
+                  if (zip.length === 5) { const loc = await lookupZip(zip); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) }
+                }}
+                onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) } }}
+                onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) }}
+              />
+              <input className="input flex-1" placeholder="City" value={billTo.city}
+                onChange={e => setBillTo(b => ({ ...b, city: e.target.value }))} />
+              <input className="input w-20" placeholder="State" value={billTo.state}
+                onChange={e => setBillTo(b => ({ ...b, state: e.target.value }))} />
             </div>
           </div>
 
@@ -572,29 +575,32 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   disabled={siteSameAsBilling}
                   onChange={e => setSiteAddress(e.target.value)} />
               </div>
-              <input className="input" placeholder="City"
-                value={siteSameAsBilling ? billTo.city : siteCity}
-                disabled={siteSameAsBilling}
-                onChange={e => setSiteCity(e.target.value)} />
-              <div className="grid grid-cols-2 gap-2">
-                <input className="input" placeholder="State"
-                  value={siteSameAsBilling ? billTo.state : siteState}
-                  disabled={siteSameAsBilling}
-                  onChange={e => setSiteState(e.target.value)} />
-                <input className="input" placeholder="ZIP"
+              <div className="col-span-2 flex gap-2">
+                <input className="input w-28 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+                  autoComplete="one-time-code" maxLength={5}
                   value={siteSameAsBilling ? billTo.zip : siteZip}
                   disabled={siteSameAsBilling}
                   onChange={async e => {
-                    const zip = e.target.value
+                    const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
                     setSiteZip(zip)
-                    const loc = await lookupZip(zip)
-                    if (loc) { setSiteCity(loc.city); setSiteState(loc.state) }
-                  }} />
+                    if (zip.length === 5) { const loc = await lookupZip(zip); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } }
+                  }}
+                  onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } } }}
+                  onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } }}
+                />
+                <input className="input flex-1" placeholder="City"
+                  value={siteSameAsBilling ? billTo.city : siteCity}
+                  disabled={siteSameAsBilling}
+                  onChange={e => setSiteCity(e.target.value)} />
+                <input className="input w-20" placeholder="State"
+                  value={siteSameAsBilling ? billTo.state : siteState}
+                  disabled={siteSameAsBilling}
+                  onChange={e => setSiteState(e.target.value)} />
               </div>
             </div>
             {!siteSameAsBilling && (<>
               {extraSites.map((site, i) => {
-                const upd = (patch: Partial<typeof site>) => { const u = [...extraSites]; u[i] = {...u[i], ...patch}; setExtraSites(u) }
+                const upd = (patch: Partial<typeof site>) => setExtraSites(prev => { const u = [...prev]; u[i] = {...u[i], ...patch}; return u })
                 return (
                   <div key={i} className="mt-3 pt-3 border-t border-slate-100">
                     <div className="flex items-center justify-between mb-2">
@@ -607,18 +613,21 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                         <input className="input" placeholder="Street address" value={site.address}
                           onChange={e => upd({ address: e.target.value })} />
                       </div>
-                      <input className="input" placeholder="City" value={site.city}
-                        onChange={e => upd({ city: e.target.value })} />
-                      <div className="grid grid-cols-2 gap-2">
-                        <input className="input" placeholder="State" value={site.state}
-                          onChange={e => upd({ state: e.target.value })} />
-                        <input className="input" placeholder="ZIP" value={site.zip}
+                      <div className="flex gap-2">
+                        <input className="input w-28 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+                          autoComplete="one-time-code" maxLength={5} value={site.zip}
                           onChange={async e => {
-                            const zip = e.target.value
+                            const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
                             upd({ zip })
-                            const loc = await lookupZip(zip)
-                            if (loc) upd({ city: loc.city, state: loc.state })
-                          }} />
+                            if (zip.length === 5) { const loc = await lookupZip(zip); if (loc) upd({ city: loc.city, state: loc.state }) }
+                          }}
+                          onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) upd({ city: loc.city, state: loc.state }) } }}
+                          onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) upd({ city: loc.city, state: loc.state }) }}
+                        />
+                        <input className="input flex-1" placeholder="City" value={site.city}
+                          onChange={e => upd({ city: e.target.value })} />
+                        <input className="input w-20" placeholder="State" value={site.state}
+                          onChange={e => upd({ state: e.target.value })} />
                       </div>
                     </div>
                   </div>
