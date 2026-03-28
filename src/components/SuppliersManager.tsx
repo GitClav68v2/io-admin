@@ -166,7 +166,7 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                 </td>
                 <td className="px-5 py-3">
                   {s.phone
-                    ? <a href={`tel:${s.phone.replace(/\D/g, '')}`} className="text-cyan-600 hover:underline font-medium">{s.phone}</a>
+                    ? <a href={`tel:+1${s.phone.replace(/\D/g, '').replace(/^1/, '')}`} className="text-cyan-600 hover:underline font-medium">{s.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">

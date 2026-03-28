@@ -301,7 +301,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 </td>
                 <td className="px-5 py-3">
                   {c.phone
-                    ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
+                    ? <a href={`tel:+1${c.phone.replace(/\D/g, '').replace(/^1/, '')}`} onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">
