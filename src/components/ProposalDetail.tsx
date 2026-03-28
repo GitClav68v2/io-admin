@@ -79,7 +79,10 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
       <div className="p-8">
         <div className="flex items-center gap-4 mb-6">
           <button onClick={() => setEditing(false)} className="text-sm text-slate-500 hover:text-slate-800">← Back</button>
-          <h1 className="text-2xl font-bold text-slate-900">Edit Proposal</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">{proposal.title}</h1>
+            {proposal.project_name && <p className="text-slate-500 text-sm">{proposal.project_name}</p>}
+          </div>
         </div>
         <ProposalForm clients={clients} catalog={catalog} proposal={proposal} />
       </div>

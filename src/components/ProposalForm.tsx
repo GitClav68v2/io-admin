@@ -80,7 +80,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   }
   const [taxRate, setTaxRate]           = useState(proposal?.tax_rate ?? TAX_RATE)
   const [taxRateDisplay, setTaxRateDisplay] = useState<string>(
-    proposal?.tax_rate != null ? (proposal.tax_rate * 100).toString() : (TAX_RATE * 100).toString()
+    proposal?.tax_rate != null ? (proposal.tax_rate * 100).toFixed(2) : (TAX_RATE * 100).toFixed(2)
   )
   function handleTaxRateBlur() {
     const pct = parseFloat(taxRateDisplay)
