@@ -539,8 +539,8 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               <input className="input" value={billTo.address}
                 onChange={e => setBillTo(b => ({ ...b, address: e.target.value }))} />
             </div>
-            <div className="col-span-2 flex gap-2">
-              <input className="input w-24 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+            <div className="col-span-2 grid gap-2" style={{ gridTemplateColumns: '5.5rem 1fr 4rem' }}">
+              <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                 autoComplete="one-time-code" maxLength={5} value={billTo.zip}
                 onChange={async e => {
                   const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
@@ -550,9 +550,9 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                 onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) } }}
                 onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) }}
               />
-              <input className="input flex-1" placeholder="City" value={billTo.city}
+              <input className="input" placeholder="City" value={billTo.city}
                 onChange={e => setBillTo(b => ({ ...b, city: e.target.value }))} />
-              <input className="input w-20" placeholder="State" value={billTo.state}
+              <input className="input" placeholder="State" value={billTo.state}
                 onChange={e => setBillTo(b => ({ ...b, state: e.target.value }))} />
             </div>
           </div>
@@ -574,8 +574,8 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   disabled={siteSameAsBilling}
                   onChange={e => setSiteAddress(e.target.value)} />
               </div>
-              <div className="col-span-2 flex gap-2">
-                <input className="input w-24 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+              <div className="col-span-2 grid gap-2" style={{ gridTemplateColumns: '5.5rem 1fr 4rem' }}">
+                <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                   autoComplete="one-time-code" maxLength={5}
                   value={siteSameAsBilling ? billTo.zip : siteZip}
                   disabled={siteSameAsBilling}
@@ -587,11 +587,11 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } } }}
                   onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } }}
                 />
-                <input className="input flex-1" placeholder="City"
+                <input className="input" placeholder="City"
                   value={siteSameAsBilling ? billTo.city : siteCity}
                   disabled={siteSameAsBilling}
                   onChange={e => setSiteCity(e.target.value)} />
-                <input className="input w-20" placeholder="State"
+                <input className="input" placeholder="State"
                   value={siteSameAsBilling ? billTo.state : siteState}
                   disabled={siteSameAsBilling}
                   onChange={e => setSiteState(e.target.value)} />
@@ -612,8 +612,8 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                         <input className="input" placeholder="Street address" value={site.address}
                           onChange={e => upd({ address: e.target.value })} />
                       </div>
-                      <div className="col-span-2 flex gap-2">
-                        <input className="input w-24 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+                      <div className="col-span-2 grid gap-2" style={{ gridTemplateColumns: '5.5rem 1fr 4rem' }}">
+                        <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                           autoComplete="one-time-code" maxLength={5} value={site.zip}
                           onChange={async e => {
                             const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
@@ -623,9 +623,9 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                           onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) upd({ city: loc.city, state: loc.state }) } }}
                           onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) upd({ city: loc.city, state: loc.state }) }}
                         />
-                        <input className="input flex-1" placeholder="City" value={site.city}
+                        <input className="input" placeholder="City" value={site.city}
                           onChange={e => upd({ city: e.target.value })} />
-                        <input className="input w-20" placeholder="State" value={site.state}
+                        <input className="input" placeholder="State" value={site.state}
                           onChange={e => upd({ state: e.target.value })} />
                       </div>
                     </div>
