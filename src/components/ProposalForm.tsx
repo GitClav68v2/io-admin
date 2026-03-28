@@ -539,7 +539,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               <input className="input" value={billTo.address}
                 onChange={e => setBillTo(b => ({ ...b, address: e.target.value }))} />
             </div>
-            <div className="col-span-2 grid gap-2" style={{ gridTemplateColumns: '5.5rem 1fr 4rem' }}">
+            <div style={{ display:'grid', gridTemplateColumns:'5.5rem 1fr 4rem', gap:'0.5rem' }}>
               <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                 autoComplete="one-time-code" maxLength={5} value={billTo.zip}
                 onChange={async e => {
@@ -574,7 +574,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   disabled={siteSameAsBilling}
                   onChange={e => setSiteAddress(e.target.value)} />
               </div>
-              <div className="col-span-2 grid gap-2" style={{ gridTemplateColumns: '5.5rem 1fr 4rem' }}">
+              <div style={{ display:'grid', gridTemplateColumns:'5.5rem 1fr 4rem', gap:'0.5rem' }}>
                 <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                   autoComplete="one-time-code" maxLength={5}
                   value={siteSameAsBilling ? billTo.zip : siteZip}
@@ -612,7 +612,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                         <input className="input" placeholder="Street address" value={site.address}
                           onChange={e => upd({ address: e.target.value })} />
                       </div>
-                      <div className="col-span-2 grid gap-2" style={{ gridTemplateColumns: '5.5rem 1fr 4rem' }}">
+                      <div style={{ display:'grid', gridTemplateColumns:'5.5rem 1fr 4rem', gap:'0.5rem' }}>
                         <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                           autoComplete="one-time-code" maxLength={5} value={site.zip}
                           onChange={async e => {
