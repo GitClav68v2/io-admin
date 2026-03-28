@@ -34,7 +34,7 @@ export default async function ProposalsPage() {
               <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-5 py-3 font-mono text-xs text-slate-500">{p.proposal_number}</td>
                 <td className="px-5 py-3">
-                  <div className="font-medium text-slate-800">{p.title}</div>
+                  <Link href={`/proposals/${p.id}`} className="font-medium text-cyan-600 hover:underline">{p.title}</Link>
                   <div className="text-xs text-slate-400">{p.client?.company || p.client?.name || p.bill_to_company || '—'}</div>
                 </td>
                 <td className="px-5 py-3 font-semibold">{formatCurrency(p.grand_total)}</td>
