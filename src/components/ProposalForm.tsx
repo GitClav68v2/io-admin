@@ -443,7 +443,10 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
 
         {/* Header info */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
-          <h2 className="font-semibold text-slate-800 text-sm uppercase tracking-wide">Proposal Details</h2>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">{title || 'New Proposal'}</h2>
+            {projectName && <p className="text-sm text-slate-500 mt-0.5">{projectName}</p>}
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="label">Title *</label>
