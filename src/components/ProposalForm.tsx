@@ -94,10 +94,9 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   async function lookupZip(zip: string): Promise<{ city: string; state: string } | null> {
     if (zip.length !== 5 || !/^\d{5}$/.test(zip)) return null
     try {
-      const res = await fetch(`https://api.zippopotam.us/us/${zip}`)
+      const res = await fetch(`/api/zipcode?zip=${zip}`)
       if (!res.ok) return null
-      const data = await res.json()
-      return { city: data.places[0]['place name'], state: data.places[0]['state abbreviation'] }
+      return await res.json()
     } catch { return null }
   }
   const [notes, setNotes]               = useState(proposal?.notes ?? '')

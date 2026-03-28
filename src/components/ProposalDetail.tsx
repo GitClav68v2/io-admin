@@ -151,7 +151,7 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
           <p className="font-semibold text-slate-800">{proposal.bill_to_company || proposal.bill_to_name || '—'}</p>
           {proposal.bill_to_company && <p className="text-sm text-slate-600">{proposal.bill_to_name}</p>}
           <p className="text-sm text-slate-500 mt-1">{proposal.bill_to_address}</p>
-          <p className="text-sm text-slate-500">{proposal.bill_to_city}, {proposal.bill_to_state} {proposal.bill_to_zip}</p>
+          <p className="text-sm text-slate-500">{[proposal.bill_to_city, proposal.bill_to_state].filter(Boolean).join(', ')}{proposal.bill_to_zip ? ` ${proposal.bill_to_zip}` : ''}</p>
           {proposal.bill_to_email && <p className="text-sm text-cyan-600 mt-1">{proposal.bill_to_email}</p>}
           {proposal.bill_to_phone && <p className="text-sm text-slate-500">{proposal.bill_to_phone}</p>}
         </div>
