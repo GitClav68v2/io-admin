@@ -43,7 +43,7 @@ const s = StyleSheet.create({
   totalVal: { fontSize: 8.5 },
   grandRow: { flexDirection: 'row', justifyContent: 'space-between', padding: '5 10', backgroundColor: NAVY },
   grandLabel: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: WHITE },
-  grandVal: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: CYAN },
+  grandVal: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: WHITE },
   balanceRow: { flexDirection: 'row', justifyContent: 'space-between', padding: '5 10', backgroundColor: '#FEF2F2', borderBottomLeftRadius: 3, borderBottomRightRadius: 3 },
   balLabel: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#991B1B' },
   balVal: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#EF4444' },
