@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Invoice } from '@/lib/types'
 import { formatCurrency, formatDate, STATUS_COLORS, SECTION_LABELS } from '@/lib/utils'
-import { FileDown, Send, CheckCircle, Loader2 } from 'lucide-react'
+import { FileDown, Send, CheckCircle, Loader2, Pencil, X, Save } from 'lucide-react'
 import Link from 'next/link'
 
 export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
@@ -12,6 +12,29 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
   const [paymentInput, setPaymentInput] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    title: invoice.title,
+    bill_to_name: invoice.bill_to_name ?? '',
+    bill_to_company: invoice.bill_to_company ?? '',
+    bill_to_email: invoice.bill_to_email ?? '',
+    bill_to_phone: invoice.bill_to_phone ?? '',
+    bill_to_address: invoice.bill_to_address ?? '',
+    bill_to_city: invoice.bill_to_city ?? '',
+    bill_to_state: invoice.bill_to_state ?? 'CA',
+    bill_to_zip: invoice.bill_to_zip ?? '',
+    notes: invoice.notes ?? '',
+    rep_name: invoice.rep_name ?? '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  async function handleSaveEdit() {
+    setSaving(true)
+    await supabase.from('invoices').update(editForm).eq('id', invoice.id)
+    setSaving(false)
+    setEditing(false)
+    router.refresh()
+  }
 
   async function handlePDF() {
     setLoading('pdf')
@@ -64,17 +87,22 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-slate-900">{invoice.title}</h1>
+            <span className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Invoice</span>
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${STATUS_COLORS[invoice.status]}`}>
               {invoice.status}
             </span>
           </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">{invoice.title}</h1>
           <p className="text-slate-400 text-sm">
             {invoice.invoice_number} · Issued {formatDate(invoice.issue_date)}
             {invoice.proposal_id && <> · <Link href={`/proposals/${invoice.proposal_id}`} className="text-cyan-600 hover:underline">View Proposal</Link></>}
           </p>
         </div>
         <div className="flex gap-2">
+          <button onClick={() => setEditing(true)}
+            className="flex items-center gap-2 border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+            <Pencil size={14} /> Edit
+          </button>
           <button onClick={handlePDF} disabled={!!loading}
             className="flex items-center gap-2 border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
             {loading === 'pdf' ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />} PDF
@@ -87,6 +115,89 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
           )}
         </div>
       </div>
+
+      {/* Edit modal */}
+      {editing && (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-8 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 mb-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="font-semibold text-slate-900">Edit Invoice</h2>
+              <button onClick={() => setEditing(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Title</label>
+                <input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+              </div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Bill To</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Contact Name</label>
+                  <input value={editForm.bill_to_name} onChange={e => setEditForm(f => ({ ...f, bill_to_name: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Company</label>
+                  <input value={editForm.bill_to_company} onChange={e => setEditForm(f => ({ ...f, bill_to_company: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
+                  <input type="email" value={editForm.bill_to_email} onChange={e => setEditForm(f => ({ ...f, bill_to_email: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
+                  <input value={editForm.bill_to_phone} onChange={e => setEditForm(f => ({ ...f, bill_to_phone: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Street</label>
+                <input value={editForm.bill_to_address} onChange={e => setEditForm(f => ({ ...f, bill_to_address: e.target.value }))}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">City</label>
+                  <input value={editForm.bill_to_city} onChange={e => setEditForm(f => ({ ...f, bill_to_city: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">State</label>
+                  <input value={editForm.bill_to_state} onChange={e => setEditForm(f => ({ ...f, bill_to_state: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">ZIP</label>
+                  <input value={editForm.bill_to_zip} onChange={e => setEditForm(f => ({ ...f, bill_to_zip: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Rep Name</label>
+                  <input value={editForm.rep_name} onChange={e => setEditForm(f => ({ ...f, rep_name: e.target.value }))}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Notes</label>
+                <textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 min-h-[70px]" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
+              <button onClick={() => setEditing(false)} className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancel</button>
+              <button onClick={handleSaveEdit} disabled={saving}
+                className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                <Save size={14} /> {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-5 mb-6">
         {/* Bill To */}
