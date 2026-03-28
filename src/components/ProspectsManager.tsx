@@ -2,9 +2,8 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Prospect, ProspectStatus } from '@/lib/types'
-import { STATUS_COLORS, formatDateShort } from '@/lib/utils'
-import { Plus, X, Save, MapPin, Search } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { STATUS_COLORS, cn } from '@/lib/utils'
+import { Plus, X, Save, Search } from 'lucide-react'
 
 const BUSINESS_TYPES = [
   'Warehouse / Industrial',
@@ -107,10 +106,6 @@ export default function ProspectsManager({ initialProspects }: { initialProspect
     }))
   }
 
-  function mapUrl(p: { city?: string | null; state?: string | null; zip?: string | null }) {
-    const parts = [p.city, p.state, p.zip].filter(Boolean).join(', ')
-    return `https://maps.google.com/?q=${encodeURIComponent(parts)}`
-  }
 
   const filtered = prospects.filter(p => {
     if (statusFilter !== 'all' && p.status !== statusFilter) return false
@@ -269,49 +264,56 @@ export default function ProspectsManager({ initialProspects }: { initialProspect
         </div>
       )}
 
-      {/* Compact list */}
+      {/* Prospect table — matches Clients layout */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Name / Company', 'Contact', 'Location', 'Type', 'Status', 'Date'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+              {['Company / Name', 'Status', 'Email', 'Phone', 'Address', ''].map(h => (
+                <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filtered.map(p => (
               <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-2.5 cursor-pointer" onClick={() => openEdit(p)}>
+                <td className="px-5 py-3 cursor-pointer" onClick={() => openEdit(p)}>
                   <div className="font-medium text-cyan-600 hover:underline">{p.company || p.name}</div>
                   {p.company && <div className="text-xs text-slate-400">{p.name}</div>}
                 </td>
-                <td className="px-4 py-2.5">
-                  <div className="text-xs text-slate-600">{p.email || '—'}</div>
-                  {p.phone && <div className="text-xs text-slate-400">{p.phone}</div>}
-                </td>
-                <td className="px-4 py-2.5">
-                  {p.city || p.zip ? (
-                    <span className="inline-flex items-center gap-1">
-                      <a href={mapUrl(p)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                        className="text-cyan-600 hover:text-cyan-500" title="Open in Google Maps">
-                        <MapPin size={13} />
-                      </a>
-                      <span className="text-xs text-slate-600">{[p.city, p.state].filter(Boolean).join(', ')} {p.zip}</span>
-                    </span>
-                  ) : <span className="text-xs text-slate-300">—</span>}
-                </td>
-                <td className="px-4 py-2.5 text-xs text-slate-500">{p.business_type || '—'}</td>
-                <td className="px-4 py-2.5">
+                <td className="px-5 py-3">
                   <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', (STATUS_COLORS as any)[p.status] ?? '')}>
                     {p.status}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-xs text-slate-400">{formatDateShort(p.created_at)}</td>
+                <td className="px-5 py-3 text-slate-500">
+                  {p.email
+                    ? <a href={`mailto:${p.email}`} onClick={e => e.stopPropagation()}
+                        className="text-cyan-600 hover:underline">{p.email}</a>
+                    : '—'}
+                </td>
+                <td className="px-5 py-3">
+                  {p.phone
+                    ? <a href={`tel:${p.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{p.phone}</a>
+                    : <span className="text-slate-300">—</span>}
+                </td>
+                <td className="px-5 py-3 text-slate-500">
+                  {p.city || p.zip ? (() => {
+                    const addr = [p.city, p.state, p.zip].filter(Boolean).join(', ')
+                    return (
+                      <a href={`https://maps.google.com/?q=${encodeURIComponent(addr)}`} target="_blank" rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="text-cyan-600 hover:underline text-xs">{addr}</a>
+                    )
+                  })() : <span className="text-xs text-slate-300">—</span>}
+                </td>
+                <td className="px-5 py-3 cursor-pointer" onClick={e => { e.stopPropagation(); openEdit(p) }}>
+                  <span className="text-cyan-600 hover:underline text-xs font-medium">Edit</span>
+                </td>
               </tr>
             ))}
             {!filtered.length && (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-slate-400">
+              <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">
                 {prospects.length ? 'No matching prospects' : 'No prospects yet'}
               </td></tr>
             )}
