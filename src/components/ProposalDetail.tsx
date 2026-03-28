@@ -100,6 +100,7 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
               {proposal.status}
             </span>
           </div>
+          {proposal.project_name && <p className="text-slate-600 text-sm font-medium mb-0.5">{proposal.project_name}</p>}
           <p className="text-slate-400 text-sm">{proposal.proposal_number} · Created {formatDate(proposal.created_at)}</p>
         </div>
 
@@ -159,7 +160,6 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Summary</h3>
           <div className="space-y-1.5 text-sm">
-            {proposal.project_name && <div className="flex justify-between"><span className="text-slate-500">Project</span><span>{proposal.project_name}</span></div>}
             {proposal.rep_name     && <div className="flex justify-between"><span className="text-slate-500">Rep</span><span>{proposal.rep_name}</span></div>}
             <div className="flex justify-between"><span className="text-slate-500">Expires</span><span>{formatDate(proposal.expires_at)}</span></div>
             {proposal.sent_at     && <div className="flex justify-between"><span className="text-slate-500">Sent</span><span>{formatDate(proposal.sent_at)}</span></div>}
