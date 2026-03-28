@@ -91,6 +91,15 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       setTaxRateDisplay((taxRate * 100).toFixed(2))
     }
   }
+  async function lookupZip(zip: string): Promise<{ city: string; state: string } | null> {
+    if (zip.length !== 5 || !/^\d{5}$/.test(zip)) return null
+    try {
+      const res = await fetch(`https://api.zippopotam.us/us/${zip}`)
+      if (!res.ok) return null
+      const data = await res.json()
+      return { city: data.places[0]['place name'], state: data.places[0]['state abbreviation'] }
+    } catch { return null }
+  }
   const [notes, setNotes]               = useState(proposal?.notes ?? '')
   const [conditionalInspection, setConditionalInspection] = useState<boolean>(proposal?.conditional_inspection ?? false)
   const [inspectionClause, setInspectionClause]           = useState<string>(proposal?.inspection_clause ?? '')
@@ -537,7 +546,12 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               <input className="input" placeholder="State" value={billTo.state}
                 onChange={e => setBillTo(b => ({ ...b, state: e.target.value }))} />
               <input className="input" placeholder="ZIP" value={billTo.zip}
-                onChange={e => setBillTo(b => ({ ...b, zip: e.target.value }))} />
+                onChange={async e => {
+                  const zip = e.target.value
+                  setBillTo(b => ({ ...b, zip }))
+                  const loc = await lookupZip(zip)
+                  if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state }))
+                }} />
             </div>
           </div>
 
@@ -570,7 +584,12 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                 <input className="input" placeholder="ZIP"
                   value={siteSameAsBilling ? billTo.zip : siteZip}
                   disabled={siteSameAsBilling}
-                  onChange={e => setSiteZip(e.target.value)} />
+                  onChange={async e => {
+                    const zip = e.target.value
+                    setSiteZip(zip)
+                    const loc = await lookupZip(zip)
+                    if (loc) { setSiteCity(loc.city); setSiteState(loc.state) }
+                  }} />
               </div>
             </div>
             {!siteSameAsBilling && (<>
@@ -594,7 +613,12 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                         <input className="input" placeholder="State" value={site.state}
                           onChange={e => upd({ state: e.target.value })} />
                         <input className="input" placeholder="ZIP" value={site.zip}
-                          onChange={e => upd({ zip: e.target.value })} />
+                          onChange={async e => {
+                            const zip = e.target.value
+                            upd({ zip })
+                            const loc = await lookupZip(zip)
+                            if (loc) upd({ city: loc.city, state: loc.state })
+                          }} />
                       </div>
                     </div>
                   </div>
