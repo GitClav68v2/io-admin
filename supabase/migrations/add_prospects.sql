@@ -24,3 +24,9 @@ create policy "Authenticated users can do everything with prospects"
   to authenticated
   using (true)
   with check (true);
+
+-- Allow the public quote form to insert prospects (no read/update/delete)
+create policy "Anyone can submit a prospect"
+  on prospects for insert
+  to anon
+  with check (true);
