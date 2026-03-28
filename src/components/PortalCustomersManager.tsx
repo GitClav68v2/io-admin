@@ -34,7 +34,7 @@ export default function PortalCustomersManager({ initialCustomers }: { initialCu
                 <td className="px-5 py-3 text-slate-500">{c.email || '—'}</td>
                 <td className="px-5 py-3">
                   {c.phone
-                    ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
+                    ? <a href={`https://voice.google.com/calls?a=nc,%2B1${c.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3" onClick={e => { e.stopPropagation(); router.push('/clients') }}>
