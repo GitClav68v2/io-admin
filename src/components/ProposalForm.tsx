@@ -541,7 +541,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                 onChange={e => setBillTo(b => ({ ...b, address: e.target.value }))} />
             </div>
             <div className="col-span-2 flex gap-2">
-              <input className="input w-28 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+              <input className="input w-24 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                 autoComplete="one-time-code" maxLength={5} value={billTo.zip}
                 onChange={async e => {
                   const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
@@ -576,7 +576,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   onChange={e => setSiteAddress(e.target.value)} />
               </div>
               <div className="col-span-2 flex gap-2">
-                <input className="input w-28 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+                <input className="input w-24 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                   autoComplete="one-time-code" maxLength={5}
                   value={siteSameAsBilling ? billTo.zip : siteZip}
                   disabled={siteSameAsBilling}
@@ -613,8 +613,8 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                         <input className="input" placeholder="Street address" value={site.address}
                           onChange={e => upd({ address: e.target.value })} />
                       </div>
-                      <div className="flex gap-2">
-                        <input className="input w-28 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
+                      <div className="col-span-2 flex gap-2">
+                        <input className="input w-24 ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
                           autoComplete="one-time-code" maxLength={5} value={site.zip}
                           onChange={async e => {
                             const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
