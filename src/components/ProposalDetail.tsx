@@ -249,9 +249,9 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
       <div className="bg-white rounded-xl border border-slate-200 p-5 max-w-sm ml-auto">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-slate-500">Equipment</span><span>{formatCurrency(proposal.subtotal_equipment)}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">Labor</span><span>{formatCurrency(proposal.subtotal_labor)}</span></div>
-          <div className="flex justify-between pt-2 border-t border-slate-100"><span className="text-slate-500">Subtotal</span><span>{formatCurrency(proposal.subtotal_equipment + proposal.subtotal_labor)}</span></div>
           <div className="flex justify-between"><span className="text-slate-500">Tax ({(proposal.tax_rate*100).toFixed(2)}%)</span><span>{formatCurrency(proposal.tax_amount)}</span></div>
+          <div className="flex justify-between pt-2 border-t border-slate-100"><span className="text-slate-500">Subtotal</span><span>{formatCurrency(proposal.subtotal_equipment + proposal.tax_amount)}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">Labor</span><span>{formatCurrency(proposal.subtotal_labor)}</span></div>
           <div className="flex justify-between font-bold text-base pt-2 border-t border-slate-200">
             <span>Total</span><span className="text-cyan-600">{formatCurrency(proposal.grand_total)}</span>
           </div>

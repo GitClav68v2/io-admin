@@ -851,16 +851,16 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             <span>{formatCurrency(totals.subtotal_equipment)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Labor</span>
-            <span>{formatCurrency(totals.subtotal_labor)}</span>
+            <span className="text-slate-500">Tax ({(taxRate*100).toFixed(2)}%)</span>
+            <span>{formatCurrency(totals.tax_amount)}</span>
           </div>
           <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
             <span className="text-slate-500">Subtotal</span>
-            <span>{formatCurrency(totals.subtotal_equipment + totals.subtotal_labor)}</span>
+            <span>{formatCurrency(totals.subtotal_equipment + totals.tax_amount)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Tax ({(taxRate*100).toFixed(2)}%)</span>
-            <span>{formatCurrency(totals.tax_amount)}</span>
+            <span className="text-slate-500">Labor</span>
+            <span>{formatCurrency(totals.subtotal_labor)}</span>
           </div>
           {/* Promo code input */}
           <div className="pt-2 border-t border-slate-100 space-y-1.5">
