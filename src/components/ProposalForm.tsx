@@ -86,9 +86,9 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
     const pct = parseFloat(taxRateDisplay)
     if (!isNaN(pct) && pct >= 0) {
       setTaxRate(pct / 100)
-      setTaxRateDisplay(pct.toString())
+      setTaxRateDisplay(pct.toFixed(2))
     } else {
-      setTaxRateDisplay((taxRate * 100).toString())
+      setTaxRateDisplay((taxRate * 100).toFixed(2))
     }
   }
   const [notes, setNotes]               = useState(proposal?.notes ?? '')
@@ -109,9 +109,14 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
 
   const [siteSameAsBilling, setSiteSameAsBilling] = useState(false)
   const SITE_DELIM = '|||'
-  const _siteparts = (proposal?.site_address ?? '').split(SITE_DELIM)
-  const [siteAddress, setSiteAddress] = useState(_siteparts[0] ?? '')
-  const [extraSites, setExtraSites]   = useState<string[]>(_siteparts.slice(1))
+  type ExtraSite = { address: string; city: string; state: string; zip: string }
+  const _raw = proposal?.site_address ?? ''
+  const _delimIdx = _raw.indexOf(SITE_DELIM)
+  const _primaryAddr = _delimIdx >= 0 ? _raw.slice(0, _delimIdx) : _raw
+  let _initExtras: ExtraSite[] = []
+  try { if (_delimIdx >= 0) _initExtras = JSON.parse(_raw.slice(_delimIdx + SITE_DELIM.length)) } catch {}
+  const [siteAddress, setSiteAddress] = useState(_primaryAddr)
+  const [extraSites, setExtraSites]   = useState<ExtraSite[]>(_initExtras)
   const [siteCity, setSiteCity]       = useState(proposal?.site_city ?? '')
   const [siteState, setSiteState]     = useState(proposal?.site_state ?? 'CA')
   const [siteZip, setSiteZip]         = useState(proposal?.site_zip ?? '')
@@ -363,7 +368,8 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       bill_to_email: billTo.email, bill_to_phone: billTo.phone,
       bill_to_address: billTo.address, bill_to_city: billTo.city,
       bill_to_state: billTo.state, bill_to_zip: billTo.zip,
-      site_address: siteSameAsBilling ? billTo.address : [siteAddress, ...extraSites.filter(s => s.trim())].join(SITE_DELIM),
+      site_address: siteSameAsBilling ? billTo.address :
+        (extraSites.length > 0 ? siteAddress + SITE_DELIM + JSON.stringify(extraSites) : siteAddress),
       site_city:    siteSameAsBilling ? billTo.city    : siteCity,
       site_state:   siteSameAsBilling ? billTo.state   : siteState,
       site_zip:     siteSameAsBilling ? billTo.zip     : siteZip,
@@ -568,16 +574,33 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               </div>
             </div>
             {!siteSameAsBilling && (<>
-              {extraSites.map((site, i) => (
-                <div key={i} className="flex gap-2 mt-2">
-                  <input className="input flex-1" placeholder={`Additional site — full address`}
-                    value={site}
-                    onChange={e => { const u = [...extraSites]; u[i] = e.target.value; setExtraSites(u) }} />
-                  <button type="button" onClick={() => setExtraSites(extraSites.filter((_, j) => j !== i))}
-                    className="text-slate-400 hover:text-red-500 px-1 text-lg leading-none">×</button>
-                </div>
-              ))}
-              <button type="button" onClick={() => setExtraSites([...extraSites, ''])}
+              {extraSites.map((site, i) => {
+                const upd = (patch: Partial<typeof site>) => { const u = [...extraSites]; u[i] = {...u[i], ...patch}; setExtraSites(u) }
+                return (
+                  <div key={i} className="mt-3 pt-3 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-slate-500">Additional Site {i + 2}</span>
+                      <button type="button" onClick={() => setExtraSites(extraSites.filter((_, j) => j !== i))}
+                        className="text-xs text-slate-400 hover:text-red-500">× Remove</button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <input className="input" placeholder="Street address" value={site.address}
+                          onChange={e => upd({ address: e.target.value })} />
+                      </div>
+                      <input className="input" placeholder="City" value={site.city}
+                        onChange={e => upd({ city: e.target.value })} />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input className="input" placeholder="State" value={site.state}
+                          onChange={e => upd({ state: e.target.value })} />
+                        <input className="input" placeholder="ZIP" value={site.zip}
+                          onChange={e => upd({ zip: e.target.value })} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+              <button type="button" onClick={() => setExtraSites([...extraSites, { address: '', city: '', state: 'CA', zip: '' }])}
                 className="text-xs text-cyan-600 hover:text-cyan-500 mt-2 flex items-center gap-1">
                 <Plus size={12} /> Add job site
               </button>
