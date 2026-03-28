@@ -854,6 +854,10 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             <span className="text-slate-500">Labor</span>
             <span>{formatCurrency(totals.subtotal_labor)}</span>
           </div>
+          <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
+            <span className="text-slate-500">Subtotal</span>
+            <span>{formatCurrency(totals.subtotal_equipment + totals.subtotal_labor)}</span>
+          </div>
           <div className="flex justify-between text-sm">
             <span className="text-slate-500">Tax ({(taxRate*100).toFixed(2)}%)</span>
             <span>{formatCurrency(totals.tax_amount)}</span>
@@ -895,7 +899,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             </div>
           )}
           <div className="flex justify-between font-bold text-base pt-2 border-t border-slate-200">
-            <span>One-Time Total</span>
+            <span>Total</span>
             <span className="text-cyan-600">{formatCurrency(finalGrandTotal)}</span>
           </div>
           {monthlyRecurring > 0 && (
