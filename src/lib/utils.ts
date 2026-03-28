@@ -53,7 +53,7 @@ export function calcCommission(
   return { revenue, cost, margin, commission }
 }
 
-export function calcTotals(items: { qty: number; unit_price: number; taxable: boolean; section: string }[]) {
+export function calcTotals(items: { qty: number; unit_price: number; taxable: boolean; section: string }[], taxRate = TAX_RATE) {
   const equipmentSections = ['cameras', 'network', 'hardware', 'other']
   let subtotal_equipment = 0
   let subtotal_labor = 0
@@ -69,7 +69,7 @@ export function calcTotals(items: { qty: number; unit_price: number; taxable: bo
     if (item.taxable) taxable += line
   }
 
-  const tax_amount  = Math.round(taxable * TAX_RATE * 100) / 100
+  const tax_amount  = Math.round(taxable * taxRate * 100) / 100
   const grand_total = subtotal_equipment + subtotal_labor + tax_amount
 
   return { subtotal_equipment, subtotal_labor, tax_amount, grand_total }

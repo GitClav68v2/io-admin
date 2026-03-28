@@ -357,7 +357,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
   // Totals
   const totals = calcTotals(items.map(i => ({
     qty: i.qty, unit_price: i.unit_price, taxable: i.taxable, section: i.section
-  })))
+  })), taxRate)
   const finalGrandTotal = Math.max(0, Math.round((totals.grand_total - promoDiscount) * 100) / 100)
   const deposit   = Math.round(finalGrandTotal * 0.50 * 100) / 100
   const progress  = Math.round(finalGrandTotal * 0.25 * 100) / 100
