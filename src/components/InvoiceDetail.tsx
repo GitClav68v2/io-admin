@@ -21,12 +21,29 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
     bill_to_phone: invoice.bill_to_phone ?? '',
     bill_to_address: invoice.bill_to_address ?? '',
     bill_to_city: invoice.bill_to_city ?? '',
-    bill_to_state: invoice.bill_to_state ?? 'CA',
+    bill_to_state: invoice.bill_to_state ?? '',
     bill_to_zip: invoice.bill_to_zip ?? '',
     notes: invoice.notes ?? '',
     rep_name: invoice.rep_name ?? '',
   })
   const [saving, setSaving] = useState(false)
+
+  function fmtPhone(val: string) {
+    const d = val.replace(/\D/g, '').slice(0, 10)
+    if (d.length <= 3) return d
+    if (d.length <= 6) return d.slice(0,3) + '-' + d.slice(3)
+    return d.slice(0,3) + '-' + d.slice(3,6) + '-' + d.slice(6)
+  }
+
+  async function lookupZip(zip: string) {
+    setEditForm(f => ({ ...f, bill_to_zip: zip }))
+    if (!/^\d{5}$/.test(zip)) return
+    try {
+      const res = await fetch(`/api/zipcode?zip=${zip}`)
+      const data = await res.json()
+      if (data) setEditForm(f => ({ ...f, bill_to_city: data.city, bill_to_state: data.state }))
+    } catch {}
+  }
 
   async function handleSaveEdit() {
     setSaving(true)
@@ -149,7 +166,7 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
-                  <input value={editForm.bill_to_phone} onChange={e => setEditForm(f => ({ ...f, bill_to_phone: e.target.value }))}
+                  <input value={editForm.bill_to_phone} onChange={e => setEditForm(f => ({ ...f, bill_to_phone: fmtPhone(e.target.value) }))}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
               </div>
@@ -160,6 +177,11 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">ZIP</label>
+                  <input value={editForm.bill_to_zip} onChange={e => lookupZip(e.target.value)}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">City</label>
                   <input value={editForm.bill_to_city} onChange={e => setEditForm(f => ({ ...f, bill_to_city: e.target.value }))}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
@@ -167,11 +189,6 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">State</label>
                   <input value={editForm.bill_to_state} onChange={e => setEditForm(f => ({ ...f, bill_to_state: e.target.value }))}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">ZIP</label>
-                  <input value={editForm.bill_to_zip} onChange={e => setEditForm(f => ({ ...f, bill_to_zip: e.target.value }))}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
                 </div>
               </div>
