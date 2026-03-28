@@ -11,18 +11,19 @@ const WHITE = '#FFFFFF'
 const s = StyleSheet.create({
   page:       { fontFamily: 'Helvetica', fontSize: 9, color: NAVY, paddingBottom: 40 },
   // Header
-  header:     { flexDirection: 'row', backgroundColor: NAVY, padding: '14 20 14 20' },
+  header:     { flexDirection: 'row', border: '1.5 solid #CBD5E1', borderRadius: 4, padding: '14 20 14 20', margin: '14 20 0 20' },
   logoBlock:  { flex: 1 },
-  logoText:   { fontSize: 18, fontFamily: 'Helvetica-Bold', color: WHITE },
+  logoText:   { fontSize: 18, fontFamily: 'Helvetica-Bold', color: NAVY },
   logoCyan:   { color: CYAN },
-  tagline:    { fontSize: 7.5, color: '#94A3B8', marginTop: 2 },
-  contact:    { fontSize: 7, color: '#94A3B8', marginTop: 4 },
+  logoAddress:{ fontSize: 7.5, color: GRAY, marginTop: 3 },
+  tagline:    { fontSize: 7.5, color: GRAY, marginTop: 2 },
+  contact:    { fontSize: 7, color: GRAY, marginTop: 4 },
   docBlock:   { alignItems: 'flex-end' },
   docTitle:   { fontSize: 20, fontFamily: 'Helvetica-Bold', color: CYAN },
   metaRow:    { flexDirection: 'row', marginTop: 2 },
-  metaLabel:  { fontSize: 7.5, color: '#94A3B8', fontFamily: 'Helvetica-Bold', marginRight: 3 },
-  metaVal:    { fontSize: 7.5, color: WHITE },
-  licText:    { fontSize: 7, color: CYAN, fontFamily: 'Helvetica-Bold', marginTop: 5 },
+  metaLabel:  { fontSize: 7.5, color: GRAY, fontFamily: 'Helvetica-Bold', marginRight: 3 },
+  metaVal:    { fontSize: 7.5, color: NAVY },
+  licText:    { fontSize: 7, color: GRAY, fontFamily: 'Helvetica-Bold', marginTop: 5 },
   // Client block
   clientRow:  { flexDirection: 'row', margin: '12 20 0 20', gap: 12 },
   clientBox:  { flex: 1, border: '1 solid #E2E8F0', borderRadius: 4, padding: '8 10' },
@@ -134,6 +135,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
         <View style={s.header}>
           <View style={s.logoBlock}>
             <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
+            {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
             <Text style={s.tagline}>Your Perimeter. Your Rules.</Text>
             <Text style={s.contact}>integrationone.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
           </View>
@@ -220,6 +222,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
         <View style={s.header}>
           <View style={s.logoBlock}>
             <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
+            {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
           </View>
           <View style={s.docBlock}>
             <Text style={[s.metaVal, { fontSize: 10 }]}>SYSTEM & PRICING DETAIL</Text>
@@ -324,6 +327,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
         <View style={s.header}>
           <View style={s.logoBlock}>
             <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
+            {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
           </View>
           <View style={s.docBlock}>
             <Text style={[s.metaVal, { fontSize: 10 }]}>WARRANTY & TERMS</Text>
