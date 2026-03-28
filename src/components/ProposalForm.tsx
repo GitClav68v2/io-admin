@@ -247,31 +247,35 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
     setAiScopeLoading(false)
   }
 
-  // HubSpot search
+  // Prospect search
   const [hsQuery, setHsQuery]     = useState('')
   const [hsResults, setHsResults] = useState<any[]>([])
   const [hsSearching, setHsSearching] = useState(false)
   const [hsOpen, setHsOpen]       = useState(false)
 
-  async function searchHubSpot(q: string) {
+  async function searchProspects(q: string) {
     setHsQuery(q)
     if (q.length < 2) { setHsResults([]); return }
     setHsSearching(true)
-    const res = await fetch(`/api/hubspot?q=${encodeURIComponent(q)}`)
-    setHsResults(await res.json())
+    const { data } = await supabase
+      .from('prospects')
+      .select('*')
+      .or(`name.ilike.%${q}%,company.ilike.%${q}%,email.ilike.%${q}%`)
+      .limit(8)
+    setHsResults(data ?? [])
     setHsSearching(false)
   }
 
-  function importHubSpotContact(c: any) {
+  function importProspect(c: any) {
     setBillTo({
-      name:    c.name,
-      company: c.company,
-      email:   c.email,
-      phone:   c.phone,
-      address: c.address,
-      city:    c.city,
+      name:    c.name ?? '',
+      company: c.company ?? '',
+      email:   c.email ?? '',
+      phone:   c.phone ?? '',
+      address: '',
+      city:    c.city ?? '',
       state:   c.state || 'CA',
-      zip:     c.zip,
+      zip:     c.zip ?? '',
     })
     setHsOpen(false)
     setHsQuery('')
@@ -479,11 +483,11 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
             </select>
           </div>
 
-          {/* HubSpot import */}
+          {/* Prospect import */}
           <div className="relative">
             <button type="button" onClick={() => setHsOpen(o => !o)}
               className="flex items-center gap-2 text-xs font-medium text-cyan-600 hover:text-cyan-500 transition-colors">
-              <Search size={13} /> Import from HubSpot
+              <Search size={13} /> Import from Prospects
             </button>
             {hsOpen && (
               <div className="absolute left-0 top-6 z-30 bg-white border border-slate-200 rounded-xl shadow-lg w-full min-w-[340px] p-3">
@@ -492,17 +496,17 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                     className="input flex-1 text-sm"
                     placeholder="Search by name, company, or email…"
                     value={hsQuery}
-                    onChange={e => searchHubSpot(e.target.value)} />
+                    onChange={e => searchProspects(e.target.value)} />
                   <button onClick={() => { setHsOpen(false); setHsQuery(''); setHsResults([]) }}
                     className="text-slate-400 hover:text-slate-600"><X size={15} /></button>
                 </div>
                 {hsSearching && <p className="text-xs text-slate-400 px-1">Searching…</p>}
                 {!hsSearching && hsResults.length === 0 && hsQuery.length >= 2 && (
-                  <p className="text-xs text-slate-400 px-1">No contacts found</p>
+                  <p className="text-xs text-slate-400 px-1">No prospects found</p>
                 )}
                 <div className="divide-y divide-slate-50">
-                  {hsResults.map(c => (
-                    <button key={c.id} type="button" onClick={() => importHubSpotContact(c)}
+                  {hsResults.map((c: any) => (
+                    <button key={c.id} type="button" onClick={() => importProspect(c)}
                       className="w-full text-left px-2 py-2 hover:bg-cyan-50 rounded-lg transition-colors">
                       <div className="text-sm font-medium text-slate-800">{c.company || c.name}</div>
                       <div className="text-xs text-slate-400">{c.company ? c.name + ' · ' : ''}{c.email}{c.phone ? ' · ' + c.phone : ''}</div>

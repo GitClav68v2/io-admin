@@ -214,6 +214,25 @@ export interface InvoiceLineItem {
   taxable: boolean
 }
 
+export type ProspectStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost'
+
+export interface Prospect {
+  id: string
+  created_at: string
+  name: string
+  company: string | null
+  email: string | null
+  phone: string | null
+  zip: string | null
+  city: string | null
+  state: string | null
+  business_type: string | null
+  areas: string[]
+  lead_source: string | null
+  notes: string | null
+  status: ProspectStatus
+}
+
 export interface CompanySettings {
   id: string
   address: string | null

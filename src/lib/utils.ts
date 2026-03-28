@@ -25,6 +25,12 @@ export const STATUS_COLORS = {
   accepted: 'bg-green-100 text-green-700',
   declined: 'bg-red-100 text-red-700',
   expired:  'bg-orange-100 text-orange-700',
+  // Prospect
+  new:        'bg-cyan-100 text-cyan-700',
+  contacted:  'bg-blue-100 text-blue-700',
+  qualified:  'bg-purple-100 text-purple-700',
+  converted:  'bg-green-100 text-green-700',
+  lost:       'bg-slate-100 text-slate-500',
   // Invoice
   unpaid:   'bg-red-100 text-red-700',
   partial:  'bg-yellow-100 text-yellow-700',
