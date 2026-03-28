@@ -8,14 +8,15 @@ const fmtDate = (s: string | null | undefined) => s ? new Date(s).toLocaleDateSt
 
 const s = StyleSheet.create({
   page: { fontFamily: 'Helvetica', fontSize: 9, color: NAVY, paddingBottom: 40 },
-  header: { flexDirection: 'row', backgroundColor: NAVY, padding: '14 20' },
-  logoText: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: WHITE },
+  header: { flexDirection: 'row', border: '2.5 solid #4B5563', padding: '14 20' },
+  logoText: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: NAVY },
   logoCyan: { color: CYAN },
+  addrLine: { fontSize: 7.5, color: GRAY, marginTop: 2 },
   docBlock: { alignItems: 'flex-end', flex: 1 },
   docTitle: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: CYAN },
   metaRow: { flexDirection: 'row', marginTop: 2 },
-  metaLabel: { fontSize: 7.5, color: '#94A3B8', fontFamily: 'Helvetica-Bold', marginRight: 3 },
-  metaVal: { fontSize: 7.5, color: WHITE },
+  metaLabel: { fontSize: 7.5, color: GRAY, fontFamily: 'Helvetica-Bold', marginRight: 3 },
+  metaVal: { fontSize: 7.5, color: NAVY },
   clientRow: { flexDirection: 'row', margin: '12 20 0 20', gap: 12 },
   clientBox: { flex: 1, border: '1 solid #E2E8F0', borderRadius: 4, padding: '8 10' },
   boxHeading: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: CYAN, marginBottom: 4 },
@@ -57,7 +58,13 @@ export default function InvoicePDF({ invoice, settings }: { invoice: Invoice; se
     <Document>
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
-          <View><Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text></View>
+          <View>
+            <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
+            <Text style={s.addrLine}>1227 Stonemark Place, Suite One</Text>
+            <Text style={s.addrLine}>Vista, California, 92081</Text>
+            <Text style={s.addrLine}>800-555-1212</Text>
+            <Text style={s.addrLine}>admin@integrationone.net</Text>
+          </View>
           <View style={s.docBlock}>
             <Text style={s.docTitle}>INVOICE</Text>
             {[['Invoice #:', invoice.invoice_number], ['Date:', fmtDate(invoice.issue_date)], ['Due:', fmtDate(invoice.due_date)]].map(([l,v]) => (
