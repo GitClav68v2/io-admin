@@ -225,6 +225,7 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
           <p className="text-sm text-slate-500 mt-1">{invoice.bill_to_address}</p>
           <p className="text-sm text-slate-500">{invoice.bill_to_city}, {invoice.bill_to_state} {invoice.bill_to_zip}</p>
           {invoice.bill_to_email && <p className="text-sm text-cyan-600 mt-1">{invoice.bill_to_email}</p>}
+          {invoice.bill_to_phone && <p className="text-sm text-cyan-600"><a href={`tel:${invoice.bill_to_phone.replace(/\D/g, '')}`}>{invoice.bill_to_phone}</a></p>}
         </div>
 
         {/* Payment status */}
