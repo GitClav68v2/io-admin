@@ -269,15 +269,15 @@ export default function ProspectsManager({ initialProspects }: { initialProspect
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Company / Name', 'Status', 'Email', 'Phone', 'Address', ''].map(h => (
+              {['Company / Name', 'Status', 'Email', 'Phone', 'Address'].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filtered.map(p => (
-              <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-3 cursor-pointer" onClick={() => openEdit(p)}>
+              <tr key={p.id} onClick={() => openEdit(p)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                <td className="px-5 py-3">
                   <div className="font-medium text-cyan-600 hover:underline">{p.company || p.name}</div>
                   {p.company && <div className="text-xs text-slate-400">{p.name}</div>}
                 </td>
@@ -307,13 +307,10 @@ export default function ProspectsManager({ initialProspects }: { initialProspect
                     )
                   })() : <span className="text-xs text-slate-300">—</span>}
                 </td>
-                <td className="px-5 py-3 cursor-pointer" onClick={e => { e.stopPropagation(); openEdit(p) }}>
-                  <span className="text-cyan-600 hover:underline text-xs font-medium">Edit</span>
-                </td>
               </tr>
             ))}
             {!filtered.length && (
-              <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">
+              <tr><td colSpan={5} className="px-5 py-12 text-center text-slate-400">
                 {prospects.length ? 'No matching prospects' : 'No prospects yet'}
               </td></tr>
             )}

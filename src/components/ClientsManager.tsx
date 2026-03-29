@@ -278,15 +278,15 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Company / Name', 'Account', 'Email', 'Phone', 'Address', ''].map(h => (
+              {['Company / Name', 'Account', 'Email', 'Phone', 'Address'].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {clients.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-3 cursor-pointer" onClick={() => openEdit(c)}>
+              <tr key={c.id} onClick={() => openEdit(c)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                <td className="px-5 py-3">
                   <div className="font-medium text-cyan-600 hover:underline">{c.company || c.name}</div>
                   {c.company && <div className="text-xs text-slate-400">{c.name}</div>}
                 </td>
@@ -316,12 +316,9 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                     )
                   })() : <span className="text-xs text-slate-300">—</span>}
                 </td>
-                <td className="px-5 py-3 cursor-pointer" onClick={e => { e.stopPropagation(); openEdit(c) }}>
-                  <span className="text-cyan-600 hover:underline text-xs font-medium">Edit</span>
-                </td>
               </tr>
             ))}
-            {!clients.length && <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No clients yet</td></tr>}
+            {!clients.length && <tr><td colSpan={5} className="px-5 py-12 text-center text-slate-400">No clients yet</td></tr>}
           </tbody>
         </table>
       </div>

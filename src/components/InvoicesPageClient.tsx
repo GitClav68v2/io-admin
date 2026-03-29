@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Download, RefreshCw, Loader2 } from 'lucide-react'
 import { formatCurrency, formatDateShort, STATUS_COLORS } from '@/lib/utils'
@@ -96,20 +95,18 @@ export default function InvoicesPageClient({ invoices, recurring }: { invoices: 
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                {['Invoice', 'Title / Client', 'Total', 'Balance Due', 'Status', 'Due Date', ''].map(h => (
+                {['Invoice', 'Title / Client', 'Total', 'Balance Due', 'Status', 'Due Date'].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {invoices.map(inv => (
-                <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-5 py-3 font-mono text-xs">
-                    <Link href={`/invoices/${inv.id}`} className="text-cyan-600 hover:underline">{inv.invoice_number}</Link>
-                  </td>
+                <tr key={inv.id} onClick={() => router.push(`/invoices/${inv.id}`)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                  <td className="px-5 py-3 font-mono text-xs text-cyan-600">{inv.invoice_number}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-1.5">
-                      <Link href={`/invoices/${inv.id}`} className="font-medium text-cyan-600 hover:underline">{inv.title}</Link>
+                      <span className="font-medium text-cyan-600">{inv.title}</span>
                       {inv.recurring_invoice_id && <RefreshCw size={11} className="text-purple-500" />}
                     </div>
                     <div className="text-xs text-slate-400">{inv.client?.company || inv.client?.name || inv.bill_to_company || '—'}</div>
@@ -122,13 +119,10 @@ export default function InvoicesPageClient({ invoices, recurring }: { invoices: 
                     </span>
                   </td>
                   <td className="px-5 py-3 text-slate-500">{formatDateShort(inv.due_date)}</td>
-                  <td className="px-5 py-3">
-                    <Link href={`/invoices/${inv.id}`} className="text-cyan-600 hover:underline text-xs font-medium">Open →</Link>
-                  </td>
                 </tr>
               ))}
               {!invoices.length && (
-                <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-400">No invoices yet — convert an accepted proposal to create one</td></tr>
+                <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No invoices yet — convert an accepted proposal to create one</td></tr>
               )}
             </tbody>
           </table>
