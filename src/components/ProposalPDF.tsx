@@ -17,7 +17,7 @@ const s = StyleSheet.create({
   logoCyan:   { color: CYAN },
   logoAddress:{ fontSize: 7.5, color: GRAY, marginTop: 3 },
   tagline:    { fontSize: 7.5, color: GRAY, marginTop: 2 },
-  contact:    { fontSize: 7, color: GRAY, marginTop: 4 },
+  contact:    { fontSize: 7.5, color: GRAY, marginTop: 1 },
   docBlock:   { alignItems: 'flex-end' },
   docTitle:   { fontSize: 20, fontFamily: 'Helvetica-Bold', color: CYAN },
   metaRow:    { flexDirection: 'row', marginTop: 2 },
@@ -48,7 +48,7 @@ const s = StyleSheet.create({
   cellText:   { fontSize: 8.5 },
   // Totals
   totalsWrap: { margin: '14 20 0 20', alignItems: 'flex-end' },
-  totalsBox:  { width: 200, border: '1 solid #E2E8F0', borderRadius: 4 },
+  totalsBox:  { width: 220, border: '1 solid #E2E8F0', borderRadius: 4 },
   totalRow:   { flexDirection: 'row', justifyContent: 'space-between', padding: '3 10' },
   totalLabel: { fontSize: 8.5, color: GRAY },
   totalVal:   { fontSize: 8.5 },

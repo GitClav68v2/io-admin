@@ -78,7 +78,7 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-16 z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-8 z-50 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 mb-8">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <h2 className="font-semibold">{editing ? 'Edit Item' : 'New Item'}</h2>
@@ -216,32 +216,32 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
                     {['Name / Description', 'SKU', 'Cost', 'Markup %', 'Unit Price', 'Unit', 'Taxable', 'Active', ''].map(h => (
-                      <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                      <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {!catItems.length && (
-                    <tr><td colSpan={9} className="px-4 py-6 text-center text-xs text-slate-400">No items — click Add Item to get started</td></tr>
+                    <tr><td colSpan={9} className="px-5 py-12 text-center text-sm text-slate-400">No items — click Add Item to get started</td></tr>
                   )}
                   {catItems.map((item, i) => (
                     <tr key={item.id} onClick={() => openEdit(item)} className={`cursor-pointer hover:bg-cyan-50 transition-colors ${i%2===0?'bg-white':'bg-slate-50/40'} ${!item.active ? 'opacity-50' : ''}`}>
-                      <td className="px-4 py-2.5">
+                      <td className="px-5 py-3">
                         <div className="font-medium text-slate-800">{item.name}</div>
                         {item.description && <div className="text-xs text-slate-400">{item.description}</div>}
                       </td>
-                      <td className="px-4 py-2.5 text-xs text-slate-400 font-mono">{item.sku || '—'}</td>
-                      <td className="px-4 py-2.5 text-xs text-slate-500">{item.cost_price ? formatCurrency(item.cost_price) : '—'}</td>
-                      <td className="px-4 py-2.5 text-xs text-slate-500">{item.markup_pct ? `${item.markup_pct}%` : '—'}</td>
-                      <td className="px-4 py-2.5 font-semibold text-cyan-600">{formatCurrency(item.unit_price)}</td>
-                      <td className="px-4 py-2.5 text-slate-500">{item.unit_label}</td>
-                      <td className="px-4 py-2.5 text-slate-500">{item.taxable ? '✓' : '—'}</td>
-                      <td className="px-4 py-2.5">
+                      <td className="px-5 py-3 text-xs text-slate-400 font-mono">{item.sku || '—'}</td>
+                      <td className="px-5 py-3 text-xs text-slate-500">{item.cost_price ? formatCurrency(item.cost_price) : '—'}</td>
+                      <td className="px-5 py-3 text-xs text-slate-500">{item.markup_pct ? `${item.markup_pct}%` : '—'}</td>
+                      <td className="px-5 py-3 font-semibold text-cyan-600">{formatCurrency(item.unit_price)}</td>
+                      <td className="px-5 py-3 text-slate-500">{item.unit_label}</td>
+                      <td className="px-5 py-3 text-slate-500">{item.taxable ? '✓' : '—'}</td>
+                      <td className="px-5 py-3">
                         <button onClick={e => { e.stopPropagation(); toggleActive(item) }} className="text-slate-400 hover:text-slate-600">
                           {item.active ? <Eye size={14} /> : <EyeOff size={14} />}
                         </button>
                       </td>
-                      <td className="px-4 py-2.5">
+                      <td className="px-5 py-3">
                         <button onClick={() => openEdit(item)} className="text-cyan-600 hover:text-cyan-400 transition-colors">
                           <Pencil size={14} />
                         </button>

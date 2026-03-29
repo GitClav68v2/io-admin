@@ -116,13 +116,13 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
     <div className="p-8 max-w-4xl">
       <div className="flex items-start justify-between mb-6">
         <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Invoice</p>
           <div className="flex items-center gap-3 mb-1">
-            <span className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Invoice</span>
+            <h1 className="text-2xl font-bold text-slate-900">{invoice.title}</h1>
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${STATUS_COLORS[invoice.status]}`}>
               {invoice.status}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">{invoice.title}</h1>
           <p className="text-slate-400 text-sm">
             {invoice.invoice_number} · Issued {formatDate(invoice.issue_date)}
             {invoice.proposal_id && <> · <Link href={`/proposals/${invoice.proposal_id}`} className="text-cyan-600 hover:underline">View Proposal</Link></>}

@@ -124,7 +124,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
     setSites(prev => prev.map((s, j) => j === i ? { ...s, ...patch } : s))
   }
 
-  const inputCls = 'w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500'
+  const inputCls = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500'
 
   return (
     <div>
