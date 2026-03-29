@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CommissionRate } from '@/lib/types'
-import { Plus, X, Save, Trash2 } from 'lucide-react'
+import { Plus, X, Save } from 'lucide-react'
 
 const blank = (): Partial<CommissionRate> => ({
   rep_name: '',
@@ -99,7 +99,13 @@ export default function CommissionRatesManager({ initialRates }: { initialRates:
               {field('rate_pct', 'Commission Rate (%)', 'number', '10')}
               {field('effective_date', 'Effective Date', 'date')}
             </div>
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
+              <div>
+                {editing && (
+                  <button onClick={() => { handleDelete(editing.id); setShowForm(false) }} className="text-xs text-red-500 hover:text-red-600 font-medium">Delete</button>
+                )}
+              </div>
+              <div className="flex gap-3">
               <button
                 onClick={() => setShowForm(false)}
                 className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -113,6 +119,7 @@ export default function CommissionRatesManager({ initialRates }: { initialRates:
               >
                 <Save size={14} /> {saving ? 'Saving…' : 'Save Rate'}
               </button>
+              </div>
             </div>
           </div>
         </div>
@@ -123,41 +130,23 @@ export default function CommissionRatesManager({ initialRates }: { initialRates:
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Rep Name', 'Email', 'Rate %', 'Effective Date', ''].map(h => (
+              {['Rep Name', 'Email', 'Rate %', 'Effective Date'].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {rates.map(r => (
-              <tr key={r.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-3 font-medium text-slate-800">{r.rep_name || '—'}</td>
+              <tr key={r.id} onClick={() => openEdit(r)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                <td className="px-5 py-3 font-medium text-cyan-600">{r.rep_name || '—'}</td>
                 <td className="px-5 py-3 text-slate-500">{r.user_email}</td>
                 <td className="px-5 py-3 text-slate-700 font-semibold">{Number(r.rate_pct).toFixed(1)}%</td>
                 <td className="px-5 py-3 text-slate-500">{r.effective_date}</td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => openEdit(r)}
-                      className="text-cyan-600 hover:underline text-xs font-medium"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(r.id)}
-                      disabled={deleting === r.id}
-                      className="text-red-400 hover:text-red-600 disabled:opacity-40"
-                      title="Delete"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </td>
               </tr>
             ))}
             {!rates.length && (
               <tr>
-                <td colSpan={5} className="px-5 py-12 text-center text-slate-400">
+                <td colSpan={4} className="px-5 py-12 text-center text-slate-400">
                   No commission rates configured — default rate of 10% will be applied
                 </td>
               </tr>
