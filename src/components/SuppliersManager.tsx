@@ -150,29 +150,29 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Company / Name', 'Email', 'Phone', 'Website', 'Address', ''].map(h => (
+              {['Company / Name', 'Email', 'Phone', 'Website', 'Address'].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {suppliers.map(s => (
-              <tr key={s.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-3 cursor-pointer" onClick={() => openEdit(s)}>
+              <tr key={s.id} onClick={() => openEdit(s)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                <td className="px-5 py-3">
                   <div className="font-medium text-cyan-600 hover:underline">{s.company || s.name}</div>
                   {s.company && <div className="text-xs text-slate-400">{s.name}</div>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">
-                  {s.email ? <a href={`mailto:${s.email}`} className="text-cyan-600 hover:underline">{s.email}</a> : '—'}
+                  {s.email ? <a href={`mailto:${s.email}`} onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline">{s.email}</a> : '—'}
                 </td>
                 <td className="px-5 py-3">
                   {s.phone
-                    ? <a href={gvCallUrl(s.phone)} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline font-medium">{s.phone}</a>
+                    ? <a href={gvCallUrl(s.phone)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{s.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">
                   {s.website
-                    ? <a href={s.website.startsWith('http') ? s.website : `https://${s.website}`} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline">
+                    ? <a href={s.website.startsWith('http') ? s.website : `https://${s.website}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline">
                         {s.website.replace(/^https?:\/\//, '')}
                       </a>
                     : '—'}
@@ -180,15 +180,12 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                 <td className="px-5 py-3 text-slate-500">
                   {s.address ? (() => {
                     const addr = [s.address, s.city, s.state, s.zip].filter(Boolean).join(', ')
-                    return <a href={`https://maps.google.com/?q=${encodeURIComponent(addr)}`} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline text-xs">{addr}</a>
+                    return <a href={`https://maps.google.com/?q=${encodeURIComponent(addr)}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline text-xs">{addr}</a>
                   })() : <span className="text-xs text-slate-300">—</span>}
-                </td>
-                <td className="px-5 py-3">
-                  <button onClick={() => openEdit(s)} className="text-cyan-600 hover:underline text-xs font-medium">Edit</button>
                 </td>
               </tr>
             ))}
-            {!suppliers.length && <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No suppliers yet</td></tr>}
+            {!suppliers.length && <tr><td colSpan={5} className="px-5 py-12 text-center text-slate-400">No suppliers yet</td></tr>}
           </tbody>
         </table>
       </div>
