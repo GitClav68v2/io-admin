@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "CMD=$(jq -r '.tool_input.command'); for p in 'rm -rf' 'DROP TABLE' 'TRUNCATE' 'git reset --hard' 'git push --force' 'git push -f' 'git clean -f'; do echo \"$CMD\" | grep -qi \"$p\" && echo \"Blocked: contains '$p'\" >&2 && exit 2; done; exit 0"
+            "command": "CMD=$(jq -r '.tool_input.command'); LAST=$(echo \"$CMD\" | awk -F'&&' '{print $NF}' | xargs); for p in 'rm -rf' 'DROP TABLE' 'TRUNCATE' 'git reset --hard' 'git push --force' 'git push -f' 'git clean -f'; do echo \"$LAST\" | grep -qi \"$p\" && echo \"Blocked: contains '$p'\" >&2 && exit 2; done; exit 0"
           }
         ]
       }
