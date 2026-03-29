@@ -209,7 +209,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setAiItemsSuggestions(data.items)
-    } catch (e: any) { alert('AI error: ' + e.message) }
+    } catch { alert('Something went wrong. Please try again.') }
     setAiItemsLoading(false)
   }
 
@@ -243,7 +243,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       if (data.error) throw new Error(data.error)
       setScopeNotes(data.scope); setAssumptions(data.assumptions); setExclusions(data.exclusions)
       setAiScopeOpen(false); setAiScopeBrief('')
-    } catch (e: any) { alert('AI error: ' + e.message) }
+    } catch { alert('Something went wrong. Please try again.') }
     setAiScopeLoading(false)
   }
 
@@ -404,7 +404,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
       await supabase.from('proposal_line_items').delete().eq('proposal_id', proposalId)
     } else {
       const { data, error } = await supabase.from('proposals').insert(payload).select().single()
-      if (error || !data) { setSaving(false); alert(error?.message); return }
+      if (error || !data) { setSaving(false); alert('Error saving proposal. Please try again.'); return }
       proposalId = data.id
     }
 

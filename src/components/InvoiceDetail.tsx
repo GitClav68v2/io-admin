@@ -57,7 +57,7 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
     setLoading('pdf')
     try {
       const res = await fetch(`/api/invoices/${invoice.id}/pdf`)
-      if (!res.ok) { const e = await res.json().catch(() => ({})); alert('PDF error: ' + (e.error ?? res.status)); setLoading(null); return }
+      if (!res.ok) { alert('Error generating PDF. Please try again.'); setLoading(null); return }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a'); a.href = url

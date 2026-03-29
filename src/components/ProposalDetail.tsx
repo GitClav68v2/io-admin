@@ -25,7 +25,7 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
     setLoading('pdf')
     try {
       const res = await fetch(`/api/proposals/${proposal.id}/pdf`)
-      if (!res.ok) { const e = await res.json().catch(() => ({})); alert('PDF error: ' + (e.error ?? res.status)); setLoading(null); return }
+      if (!res.ok) { alert('Error generating PDF. Please try again.'); setLoading(null); return }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a'); a.href = url
@@ -61,7 +61,7 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setFollowup(data)
-    } catch (e: any) { alert('AI error: ' + e.message) }
+    } catch { alert('Something went wrong. Please try again.') }
     setLoading(null)
   }
 
@@ -70,7 +70,7 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
     const res = await fetch(`/api/proposals/${proposal.id}/convert`, { method: 'POST' })
     const data = await res.json()
     if (data.invoiceId) router.push(`/invoices/${data.invoiceId}`)
-    else alert('Error: ' + data.error)
+    else alert('Something went wrong. Please try again.')
     setLoading(null)
   }
 
