@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Invoice } from '@/lib/types'
@@ -11,6 +11,19 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
+
+  // Re-insert tel: links so Google Voice extension picks them up
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
+        const parent = a.parentNode
+        if (!parent) return
+        const clone = a.cloneNode(true) as HTMLAnchorElement
+        parent.replaceChild(clone, a)
+      })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [])
   const [paymentInput, setPaymentInput] = useState('')
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({
