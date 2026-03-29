@@ -12,6 +12,8 @@ const s = StyleSheet.create({
   logoText: { fontSize: 18, fontFamily: 'Helvetica-Bold', color: NAVY },
   logoCyan: { color: CYAN },
   logoAddress: { fontSize: 7.5, color: GRAY, marginTop: 3 },
+  tagline: { fontSize: 7.5, color: GRAY, marginTop: 2 },
+  contact: { fontSize: 7.5, color: GRAY, marginTop: 1 },
   docBlock: { alignItems: 'flex-end', flex: 1 },
   docTitle: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: CYAN },
   metaRow: { flexDirection: 'row', marginTop: 2 },
@@ -61,6 +63,9 @@ export default function InvoicePDF({ invoice, settings }: { invoice: Invoice; se
           <View>
             <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
             {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
+            <Text style={s.tagline}>See Everything, Miss Nothing — Security That Never Sleeps</Text>
+            <Text style={s.contact}>1227 Stonemark Place, Suite One, Vista, California, 92081</Text>
+            <Text style={s.contact}>www.IntegrationOne.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
           </View>
           <View style={s.docBlock}>
             <Text style={s.docTitle}>INVOICE</Text>
@@ -125,7 +130,7 @@ export default function InvoicePDF({ invoice, settings }: { invoice: Invoice; se
         </View>
 
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One{settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''} · integrationone.net · info@integrationone.net{settings.phone ? ` · ${settings.phone}` : ''}</Text>
+          <Text style={s.footText}>IntegrationOne{settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''} · www.IntegrationOne.net</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
