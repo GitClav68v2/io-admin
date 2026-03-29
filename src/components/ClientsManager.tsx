@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Client, ClientSite } from '@/lib/types'
 import { Plus, X, Save, Trash2 } from 'lucide-react'
@@ -33,6 +33,19 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
   const [saving, setSaving]           = useState(false)
   const [billingSame, setBillingSame] = useState(false)
   const [sites, setSites]             = useState<SiteDraft[]>([])
+
+  // Re-insert tel: links so Google Voice extension picks them up
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
+        const parent = a.parentNode
+        if (!parent) return
+        const clone = a.cloneNode(true) as HTMLAnchorElement
+        parent.replaceChild(clone, a)
+      })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [clients])
 
   function openNew() {
     setForm(blank()); setEditing(null); setBillingSame(false); setSites([]); setShowForm(true)
