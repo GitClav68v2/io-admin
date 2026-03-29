@@ -547,13 +547,14 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
               <input className="input" value={billTo.address}
                 onChange={e => setBillTo(b => ({ ...b, address: e.target.value }))} />
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'5.5rem 1fr 4rem', gap:'0.5rem' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'7.5rem 1fr 4rem', gap:'0.5rem' }}>
               <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
-                autoComplete="one-time-code" maxLength={5} value={billTo.zip}
+                autoComplete="one-time-code" maxLength={10} value={billTo.zip}
                 onChange={async e => {
-                  const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
+                  const zip = e.target.value.replace(/[^\d-]/g, '').slice(0, 10)
                   setBillTo(b => ({ ...b, zip }))
-                  if (zip.length === 5) { const loc = await lookupZip(zip); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) }
+                  const digits = zip.replace(/\D/g, '').slice(0, 5)
+                  if (digits.length === 5) { const loc = await lookupZip(digits); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) }
                 }}
                 onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) } }}
                 onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) setBillTo(b => ({ ...b, city: loc.city, state: loc.state })) }}
@@ -582,15 +583,16 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   disabled={siteSameAsBilling}
                   onChange={e => setSiteAddress(e.target.value)} />
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'5.5rem 1fr 4rem', gap:'0.5rem' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'7.5rem 1fr 4rem', gap:'0.5rem' }}>
                 <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
-                  autoComplete="one-time-code" maxLength={5}
+                  autoComplete="one-time-code" maxLength={10}
                   value={siteSameAsBilling ? billTo.zip : siteZip}
                   disabled={siteSameAsBilling}
                   onChange={async e => {
-                    const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
+                    const zip = e.target.value.replace(/[^\d-]/g, '').slice(0, 10)
                     setSiteZip(zip)
-                    if (zip.length === 5) { const loc = await lookupZip(zip); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } }
+                    const digits = zip.replace(/\D/g, '').slice(0, 5)
+                    if (digits.length === 5) { const loc = await lookupZip(digits); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } }
                   }}
                   onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } } }}
                   onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) { setSiteCity(loc.city); setSiteState(loc.state) } }}
@@ -620,13 +622,14 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                         <input className="input" placeholder="Street address" value={site.address}
                           onChange={e => upd({ address: e.target.value })} />
                       </div>
-                      <div style={{ display:'grid', gridTemplateColumns:'5.5rem 1fr 4rem', gap:'0.5rem' }}>
+                      <div style={{ display:'grid', gridTemplateColumns:'7.5rem 1fr 4rem', gap:'0.5rem' }}>
                         <input className="input ring-2 ring-cyan-300 focus:ring-cyan-500" placeholder="ZIP — enter first"
-                          autoComplete="one-time-code" maxLength={5} value={site.zip}
+                          autoComplete="one-time-code" maxLength={10} value={site.zip}
                           onChange={async e => {
-                            const zip = e.target.value.replace(/\D/g, '').slice(0, 5)
+                            const zip = e.target.value.replace(/[^\d-]/g, '').slice(0, 10)
                             upd({ zip })
-                            if (zip.length === 5) { const loc = await lookupZip(zip); if (loc) upd({ city: loc.city, state: loc.state }) }
+                            const digits = zip.replace(/\D/g, '').slice(0, 5)
+                            if (digits.length === 5) { const loc = await lookupZip(digits); if (loc) upd({ city: loc.city, state: loc.state }) }
                           }}
                           onKeyDown={async e => { if (e.key === 'Enter') { e.preventDefault(); const loc = await lookupZip(e.currentTarget.value); if (loc) upd({ city: loc.city, state: loc.state }) } }}
                           onBlur={async e => { const loc = await lookupZip(e.target.value); if (loc) upd({ city: loc.city, state: loc.state }) }}
