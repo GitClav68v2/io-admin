@@ -127,36 +127,39 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
   const progress = proposal.grand_total * (proposal.progress_pct / 100)
   const final    = proposal.grand_total * (proposal.final_pct    / 100)
 
+  const fullHeader = (
+    <View style={s.header}>
+      <View style={s.logoBlock}>
+        <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
+        {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
+        <Text style={s.tagline}>See Everything, Miss Nothing — Security That Never Sleeps</Text>
+        <Text style={s.contact}>1227 Stonemark Place, Suite One, Vista, California, 92081</Text>
+        <Text style={s.contact}>www.IntegrationOne.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
+      </View>
+      <View style={s.docBlock}>
+        <Text style={s.docTitle}>PROPOSAL</Text>
+        {[
+          ['Proposal #:', proposal.proposal_number],
+          ['Date:', fmtDate(proposal.created_at)],
+          ['Expires:', fmtDate(proposal.expires_at)],
+          ['Version:', `v${proposal.version}`],
+          ...(proposal.rep_name ? [['Prepared by:', proposal.rep_name]] : []),
+        ].map(([label, val]) => (
+          <View key={label} style={s.metaRow}>
+            <Text style={s.metaLabel}>{label}</Text>
+            <Text style={s.metaVal}>{val}</Text>
+          </View>
+        ))}
+        {settings.license_number ? <Text style={s.licText}>CA Lic. #{settings.license_number}</Text> : null}
+      </View>
+    </View>
+  )
+
   return (
     <Document>
       {/* ── PAGE 1: Cover + Client ── */}
       <Page size="LETTER" style={s.page}>
-        {/* Header */}
-        <View style={s.header}>
-          <View style={s.logoBlock}>
-            <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
-            {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
-            <Text style={s.tagline}>See Everything, Miss Nothing — Security That Never Sleeps</Text>
-            <Text style={s.contact}>1227 Stonemark Place, Suite One, Vista, California, 92081</Text>
-            <Text style={s.contact}>www.IntegrationOne.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
-          </View>
-          <View style={s.docBlock}>
-            <Text style={s.docTitle}>PROPOSAL</Text>
-            {[
-              ['Proposal #:', proposal.proposal_number],
-              ['Date:', fmtDate(proposal.created_at)],
-              ['Expires:', fmtDate(proposal.expires_at)],
-              ['Version:', `v${proposal.version}`],
-              ...(proposal.rep_name ? [['Prepared by:', proposal.rep_name]] : []),
-            ].map(([label, val]) => (
-              <View key={label} style={s.metaRow}>
-                <Text style={s.metaLabel}>{label}</Text>
-                <Text style={s.metaVal}>{val}</Text>
-              </View>
-            ))}
-            {settings.license_number ? <Text style={s.licText}>CA Lic. #{settings.license_number}</Text> : null}
-          </View>
-        </View>
+        {fullHeader}
 
         {/* Bill To / Job Site */}
         <View style={s.clientRow}>
@@ -220,16 +223,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
 
       {/* ── PAGE 2: Line Items + Pricing ── */}
       <Page size="LETTER" style={s.page}>
-        <View style={s.header}>
-          <View style={s.logoBlock}>
-            <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
-            {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
-          </View>
-          <View style={s.docBlock}>
-            <Text style={[s.metaVal, { fontSize: 10 }]}>SYSTEM & PRICING DETAIL</Text>
-            <Text style={s.metaVal}>{proposal.proposal_number}</Text>
-          </View>
-        </View>
+        {fullHeader}
 
         {sections.map(section => {
           const sectionItems = items.filter(li => li.section === section)
@@ -325,16 +319,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
 
       {/* ── PAGE 3: Warranty, Terms, Signature ── */}
       <Page size="LETTER" style={s.page}>
-        <View style={s.header}>
-          <View style={s.logoBlock}>
-            <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
-            {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
-          </View>
-          <View style={s.docBlock}>
-            <Text style={[s.metaVal, { fontSize: 10 }]}>WARRANTY & TERMS</Text>
-            <Text style={s.metaVal}>{proposal.proposal_number}</Text>
-          </View>
-        </View>
+        {fullHeader}
 
         <View style={s.clauseWrap}>
           <Text style={[s.payTitle, { fontSize: 10, marginBottom: 6 }]}>WARRANTY</Text>
