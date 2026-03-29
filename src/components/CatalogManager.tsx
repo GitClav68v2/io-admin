@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CatalogItem, ItemCategory } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
-import { Plus, X, Save, Pencil, Eye, EyeOff } from 'lucide-react'
+import { Plus, X, Save, Eye, EyeOff } from 'lucide-react'
 
 const CATEGORIES: { value: ItemCategory; label: string }[] = [
   { value: 'camera',   label: 'A — Cameras & Sensors' },
@@ -215,14 +215,14 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    {['Name / Description', 'SKU', 'Cost', 'Markup %', 'Unit Price', 'Unit', 'Taxable', 'Active', ''].map(h => (
+                    {['Name / Description', 'SKU', 'Cost', 'Markup %', 'Unit Price', 'Unit', 'Taxable', 'Active'].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {!catItems.length && (
-                    <tr><td colSpan={9} className="px-5 py-12 text-center text-sm text-slate-400">No items — click Add Item to get started</td></tr>
+                    <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-slate-400">No items — click Add Item to get started</td></tr>
                   )}
                   {catItems.map((item, i) => (
                     <tr key={item.id} onClick={() => openEdit(item)} className={`cursor-pointer hover:bg-cyan-50 transition-colors ${i%2===0?'bg-white':'bg-slate-50/40'} ${!item.active ? 'opacity-50' : ''}`}>
@@ -239,11 +239,6 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                       <td className="px-5 py-3">
                         <button onClick={e => { e.stopPropagation(); toggleActive(item) }} className="text-slate-400 hover:text-slate-600">
                           {item.active ? <Eye size={14} /> : <EyeOff size={14} />}
-                        </button>
-                      </td>
-                      <td className="px-5 py-3">
-                        <button onClick={() => openEdit(item)} className="text-cyan-600 hover:text-cyan-400 transition-colors">
-                          <Pencil size={14} />
                         </button>
                       </td>
                     </tr>
