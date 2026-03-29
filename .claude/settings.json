@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path'); case \"$FILE\" in *package-lock.json*|*node_modules*|*.env*|*.env.local*|*.git/*) echo \"Blocked: $FILE is protected\" >&2; exit 2;; esac; exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(jq -r '.tool_input.command'); for p in 'rm -rf' 'DROP TABLE' 'TRUNCATE' 'git reset --hard' 'git push --force' 'git push -f' 'git clean -f'; do echo \"$CMD\" | grep -qi \"$p\" && echo \"Blocked: contains '$p'\" >&2 && exit 2; done; exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path'); case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.css|*.md) npx prettier --write \"$FILE\" 2>/dev/null;; esac; exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Run `npx tsc --noEmit` in /Volumes/iMac\\ RAID/Claude/io-admin. If there are TypeScript errors, respond with {\"ok\": false, \"reason\": \"list the errors\"}. If clean, respond {\"ok\": true}.",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
