@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Invoice } from '@/lib/types'
-import { formatCurrency, formatDate, STATUS_COLORS, SECTION_LABELS } from '@/lib/utils'
+import { formatCurrency, formatDate, STATUS_COLORS, SECTION_LABELS, gvCallUrl } from '@/lib/utils'
 import { FileDown, Send, CheckCircle, Loader2, Pencil, X, Save, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
@@ -12,18 +12,6 @@ export default function InvoiceDetail({ invoice, hasRecurring }: { invoice: Invo
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
 
-  // Re-insert tel: links so Google Voice extension picks them up
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
-        const parent = a.parentNode
-        if (!parent) return
-        const clone = a.cloneNode(true) as HTMLAnchorElement
-        parent.replaceChild(clone, a)
-      })
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [])
   const [paymentInput, setPaymentInput] = useState('')
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({
@@ -345,7 +333,7 @@ export default function InvoiceDetail({ invoice, hasRecurring }: { invoice: Invo
           <p className="text-sm text-slate-500 mt-1">{invoice.bill_to_address}</p>
           <p className="text-sm text-slate-500">{invoice.bill_to_city}, {invoice.bill_to_state} {invoice.bill_to_zip}</p>
           {invoice.bill_to_email && <p className="text-sm text-cyan-600 mt-1">{invoice.bill_to_email}</p>}
-          {invoice.bill_to_phone && <p className="text-sm text-cyan-600"><a href={`tel:${invoice.bill_to_phone.replace(/\D/g, '')}`}>{invoice.bill_to_phone}</a></p>}
+          {invoice.bill_to_phone && <p className="text-sm text-cyan-600"><a href={gvCallUrl(invoice.bill_to_phone)} target="_blank" rel="noopener noreferrer">{invoice.bill_to_phone}</a></p>}
         </div>
 
         {/* Payment status */}

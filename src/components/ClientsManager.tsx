@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Client, ClientSite } from '@/lib/types'
+import { gvCallUrl } from '@/lib/utils'
 import { Plus, X, Save, Trash2 } from 'lucide-react'
 
 const LEAD_SOURCE_OPTIONS = ['Google Search', 'Referral', 'Existing Customer', 'LinkedIn', 'Trade Show', 'Other']
@@ -34,18 +35,6 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
   const [billingSame, setBillingSame] = useState(false)
   const [sites, setSites]             = useState<SiteDraft[]>([])
 
-  // Re-insert tel: links so Google Voice extension picks them up
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
-        const parent = a.parentNode
-        if (!parent) return
-        const clone = a.cloneNode(true) as HTMLAnchorElement
-        parent.replaceChild(clone, a)
-      })
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [clients])
 
   function openNew() {
     setForm(blank()); setEditing(null); setBillingSame(false); setSites([]); setShowForm(true)
@@ -314,7 +303,7 @@ export default function ClientsManager({ initialClients }: { initialClients: Cli
                 </td>
                 <td className="px-5 py-3">
                   {c.phone
-                    ? <a href={`tel:${c.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
+                    ? <a href={gvCallUrl(c.phone)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{c.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">

@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Prospect, ProspectStatus } from '@/lib/types'
-import { STATUS_COLORS, cn } from '@/lib/utils'
+import { STATUS_COLORS, cn, gvCallUrl } from '@/lib/utils'
 import { Plus, X, Save, Search } from 'lucide-react'
 
 const BUSINESS_TYPES = [
@@ -58,19 +58,6 @@ export default function ProspectsManager({ initialProspects }: { initialProspect
   const [saving, setSaving]       = useState(false)
   const [search, setSearch]       = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-
-  // Re-insert tel: links so Google Voice extension's MutationObserver picks them up
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
-        const parent = a.parentNode
-        if (!parent) return
-        const clone = a.cloneNode(true) as HTMLAnchorElement
-        parent.replaceChild(clone, a)
-      })
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [prospects])
 
   function openNew() {
     setForm(blank()); setEditing(null); setShowForm(true)
@@ -307,7 +294,7 @@ export default function ProspectsManager({ initialProspects }: { initialProspect
                 </td>
                 <td className="px-5 py-3">
                   {p.phone
-                    ? <a href={`tel:${p.phone.replace(/\D/g, '')}`} onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{p.phone}</a>
+                    ? <a href={gvCallUrl(p.phone)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-cyan-600 hover:underline font-medium">{p.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">

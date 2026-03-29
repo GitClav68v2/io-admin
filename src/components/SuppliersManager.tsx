@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Supplier } from '@/lib/types'
+import { gvCallUrl } from '@/lib/utils'
 import { Plus, X, Save } from 'lucide-react'
 
 const blank = (): Partial<Supplier> => ({
@@ -19,19 +20,6 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
   const [form, setForm]           = useState<Partial<Supplier>>(blank())
   const [saving, setSaving]       = useState(false)
   const [billingSame, setBillingSame] = useState(false)
-
-  // Re-insert tel: links so Google Voice extension picks them up
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
-        const parent = a.parentNode
-        if (!parent) return
-        const clone = a.cloneNode(true) as HTMLAnchorElement
-        parent.replaceChild(clone, a)
-      })
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [suppliers])
 
   function openNew()  { setForm(blank()); setEditing(null); setBillingSame(false); setShowForm(true) }
   function openEdit(s: Supplier) {
@@ -179,7 +167,7 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
                 </td>
                 <td className="px-5 py-3">
                   {s.phone
-                    ? <a href={`tel:${s.phone.replace(/\D/g, '')}`} className="text-cyan-600 hover:underline font-medium">{s.phone}</a>
+                    ? <a href={gvCallUrl(s.phone)} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline font-medium">{s.phone}</a>
                     : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-5 py-3 text-slate-500">

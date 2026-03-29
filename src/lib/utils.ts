@@ -48,6 +48,13 @@ export const SECTION_LABELS: Record<string, string> = {
 
 export const TAX_RATE = 0.1025
 
+/** Build a Google Voice call URL from a phone string */
+export function gvCallUrl(phone: string): string {
+  const digits = phone.replace(/\D/g, '')
+  const num = digits.length === 10 ? `1${digits}` : digits
+  return `https://voice.google.com/u/0/calls?a=nc,%2B${num}`
+}
+
 export function calcCommission(
   lineItems: Array<{ unit_price: number; cost_price: number; qty: number }>,
   ratePct: number
