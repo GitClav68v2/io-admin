@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Prospect, ProspectStatus } from '@/lib/types'
 import { STATUS_COLORS, cn } from '@/lib/utils'
@@ -58,6 +58,19 @@ export default function ProspectsManager({ initialProspects }: { initialProspect
   const [saving, setSaving]       = useState(false)
   const [search, setSearch]       = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // Re-insert tel: links so Google Voice extension's MutationObserver picks them up
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
+        const parent = a.parentNode
+        if (!parent) return
+        const clone = a.cloneNode(true) as HTMLAnchorElement
+        parent.replaceChild(clone, a)
+      })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [prospects])
 
   function openNew() {
     setForm(blank()); setEditing(null); setShowForm(true)
