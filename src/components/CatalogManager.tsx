@@ -225,7 +225,7 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                     <tr><td colSpan={9} className="px-4 py-6 text-center text-xs text-slate-400">No items — click Add Item to get started</td></tr>
                   )}
                   {catItems.map((item, i) => (
-                    <tr key={item.id} className={`${i%2===0?'bg-white':'bg-slate-50/40'} ${!item.active ? 'opacity-50' : ''}`}>
+                    <tr key={item.id} onClick={() => openEdit(item)} className={`cursor-pointer hover:bg-cyan-50 transition-colors ${i%2===0?'bg-white':'bg-slate-50/40'} ${!item.active ? 'opacity-50' : ''}`}>
                       <td className="px-4 py-2.5">
                         <div className="font-medium text-slate-800">{item.name}</div>
                         {item.description && <div className="text-xs text-slate-400">{item.description}</div>}
@@ -237,7 +237,7 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                       <td className="px-4 py-2.5 text-slate-500">{item.unit_label}</td>
                       <td className="px-4 py-2.5 text-slate-500">{item.taxable ? '✓' : '—'}</td>
                       <td className="px-4 py-2.5">
-                        <button onClick={() => toggleActive(item)} className="text-slate-400 hover:text-slate-600">
+                        <button onClick={e => { e.stopPropagation(); toggleActive(item) }} className="text-slate-400 hover:text-slate-600">
                           {item.active ? <Eye size={14} /> : <EyeOff size={14} />}
                         </button>
                       </td>
