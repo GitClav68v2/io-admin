@@ -133,6 +133,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
         <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
         {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
         <Text style={s.tagline}>See Everything, Miss Nothing — Security That Never Sleeps</Text>
+        <Text style={{ marginTop: 6 }}>{''}</Text>
         <Text style={s.contact}>1227 Stonemark Place, Suite One, Vista, California, 92081</Text>
         <Text style={s.contact}>www.IntegrationOne.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
       </View>
