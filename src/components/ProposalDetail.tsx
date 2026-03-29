@@ -97,6 +97,7 @@ export default function ProposalDetail({ proposal, catalog, clients }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Proposal</p>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl font-bold text-slate-900">{proposal.title}</h1>
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${STATUS_COLORS[proposal.status]}`}>

@@ -136,8 +136,9 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
           <View style={s.logoBlock}>
             <Text style={s.logoText}>INTEGRATION<Text style={s.logoCyan}>ONE</Text></Text>
             {settings.address ? <Text style={s.logoAddress}>{settings.address}</Text> : null}
-            <Text style={s.tagline}>Your Perimeter. Your Rules.</Text>
-            <Text style={s.contact}>integrationone.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
+            <Text style={s.tagline}>See Everything, Miss Nothing — Security That Never Sleeps</Text>
+            <Text style={s.contact}>1227 Stonemark Place, Suite One, Vista, California, 92081</Text>
+            <Text style={s.contact}>www.IntegrationOne.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
           </View>
           <View style={s.docBlock}>
             <Text style={s.docTitle}>PROPOSAL</Text>
@@ -317,7 +318,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
         )}
 
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  integrationone.net</Text>
+          <Text style={s.footText}>IntegrationOne{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  www.IntegrationOne.net</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
