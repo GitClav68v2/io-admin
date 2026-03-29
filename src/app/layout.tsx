@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Integration One Admin',
+  title: 'IntegrationOne Admin',
   description: 'Internal admin portal — proposals, invoices, clients',
 }
 

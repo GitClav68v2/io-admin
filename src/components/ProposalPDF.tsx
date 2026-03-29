@@ -101,21 +101,21 @@ function fmtDate(s: string | null | undefined) {
 }
 
 const WARRANTY = [
-  ['Equipment — Manufacturer Warranty', 'All hardware carries the full manufacturer warranty (typically 2–3 years). Integration One will facilitate warranty claims on behalf of the client. Integration One does not extend or supplement manufacturer warranties.'],
-  ['Installation Labor — 1 Year', 'Integration One warrants all installation workmanship, cable terminations, and physical mounting for one (1) year from project completion. Defects in workmanship will be remedied at no charge.'],
+  ['Equipment — Manufacturer Warranty', 'All hardware carries the full manufacturer warranty (typically 2–3 years). IntegrationOne will facilitate warranty claims on behalf of the client. IntegrationOne does not extend or supplement manufacturer warranties.'],
+  ['Installation Labor — 1 Year', 'IntegrationOne warrants all installation workmanship, cable terminations, and physical mounting for one (1) year from project completion. Defects in workmanship will be remedied at no charge.'],
   ['Programming & Configuration — 90 Days', 'NVR configuration, camera settings, motion zones, and remote access setup are warranted for 90 days. Client-requested changes after acceptance are billable at the standard service rate.'],
   ['Warranty Exclusions', 'Does not cover: vandalism, power surges, acts of God, unauthorized modifications, failure of client-supplied internet, or normal wear and tear.'],
 ]
 
 const TERMS = [
-  ['1. Proposal Validity.', 'This proposal is valid for 30 days from the date of issue. Integration One reserves the right to revise pricing after expiration.'],
+  ['1. Proposal Validity.', 'This proposal is valid for 30 days from the date of issue. IntegrationOne reserves the right to revise pricing after expiration.'],
   ['2. Change Orders.', 'Work beyond this scope requires a written change order signed by both parties before commencement. Change orders are billed at $95/hr (standard) or $145/hr (after-hours).'],
-  ['3. Equipment Ownership.', 'Title to all materials and equipment remains with Integration One until final payment is received in full.'],
-  ['4. Subcontractors.', 'Integration One coordinates licensed low-voltage subcontractors. All subcontractors carry appropriate licensure and insurance.'],
+  ['3. Equipment Ownership.', 'Title to all materials and equipment remains with IntegrationOne until final payment is received in full.'],
+  ['4. Subcontractors.', 'IntegrationOne coordinates licensed low-voltage subcontractors. All subcontractors carry appropriate licensure and insurance.'],
   ['5. Client Responsibilities.', 'Client agrees to provide safe site access, designate a site contact, and ensure electrical outlets and internet are available as described.'],
-  ['6. Permits.', 'Integration One will obtain required permits where applicable. Permit fees are billed at cost unless stated otherwise.'],
-  ['7. Limitation of Liability.', 'Total liability shall not exceed the contract price. Integration One is not liable for losses resulting from system failure or monitoring service interruptions.'],
-  ['8. Monitoring Services.', 'Integration One is a coordinator and does not operate a monitoring center. Monthly fees are paid directly to the monitoring provider.'],
+  ['6. Permits.', 'IntegrationOne will obtain required permits where applicable. Permit fees are billed at cost unless stated otherwise.'],
+  ['7. Limitation of Liability.', 'Total liability shall not exceed the contract price. IntegrationOne is not liable for losses resulting from system failure or monitoring service interruptions.'],
+  ['8. Monitoring Services.', 'IntegrationOne is a coordinator and does not operate a monitoring center. Monthly fees are paid directly to the monitoring provider.'],
   ['9. Dispute Resolution.', 'Disputes shall first be submitted to mediation, then governed by the laws of the State of California, County of Orange.'],
   ['10. Entire Agreement.', 'This proposal, once accepted, constitutes the entire agreement between the parties.'],
 ]
@@ -216,7 +216,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
         )}
 
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  integrationone.net{settings.address ? `  ·  ${settings.address}` : ''}</Text>
+          <Text style={s.footText}>IntegrationOne{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  integrationone.net{settings.address ? `  ·  ${settings.address}` : ''}</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
@@ -299,7 +299,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
             </View>
           ))}
           <Text style={[s.scopeText, { marginTop: 4, fontSize: 7.5 }]}>
-            Late payment: Balances unpaid more than 15 days after due date accrue interest at 1.5%/month. Integration One retains title to all installed equipment until payment is received in full.
+            Late payment: Balances unpaid more than 15 days after due date accrue interest at 1.5%/month. IntegrationOne retains title to all installed equipment until payment is received in full.
           </Text>
         </View>
 
@@ -357,7 +357,7 @@ export default function ProposalPDF({ proposal, settings }: { proposal: Proposal
         </View>
 
         <View style={s.footer}>
-          <Text style={s.footText}>Integration One{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
+          <Text style={s.footText}>IntegrationOne{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

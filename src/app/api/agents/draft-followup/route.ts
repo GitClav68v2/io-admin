@@ -37,7 +37,7 @@ Proposal: ${proposalNumber} — ${title}
 Client: ${clientName || 'the client'}
 Total: ${fmt(total)}
 Sent: ${daysSince} day${daysSince !== 1 ? 's' : ''} ago
-Signed by: ${repName || 'the Integration One team'}
+Signed by: ${repName || 'the IntegrationOne team'}
 
 Return JSON:
 {

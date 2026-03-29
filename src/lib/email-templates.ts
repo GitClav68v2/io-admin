@@ -11,7 +11,7 @@ const supabase = createClient(
 
 const DEFAULTS: Record<EmailTemplateType, { subject: string; body_html: string }> = {
   proposal_send: {
-    subject: 'Your Proposal from Integration One — {{proposal_number}}',
+    subject: 'Your Proposal from IntegrationOne — {{proposal_number}}',
     body_html: `<div style="font-family: Arial, sans-serif; max-width: 600px; color: #0F172A;">
   <div style="background: #0F172A; padding: 24px 28px;">
     <span style="font-size: 20px; font-weight: bold; color: white;">INTEGRATION</span>
@@ -53,7 +53,7 @@ const DEFAULTS: Record<EmailTemplateType, { subject: string; body_html: string }
     <p style="color: #64748B; margin-top: 24px;">
       Best regards,<br/>
       <strong>{{rep_name}}</strong><br/>
-      Integration One<br/>
+      IntegrationOne<br/>
       <a href="https://www.integrationone.net" style="color: #06B6D4;">integrationone.net</a>
     </p>
   </div>
@@ -61,7 +61,7 @@ const DEFAULTS: Record<EmailTemplateType, { subject: string; body_html: string }
 </div>`,
   },
   invoice_send: {
-    subject: 'Invoice from Integration One — {{invoice_number}}',
+    subject: 'Invoice from IntegrationOne — {{invoice_number}}',
     body_html: `<div style="font-family: Arial, sans-serif; max-width: 600px; color: #0F172A;">
   <div style="background: #0F172A; padding: 24px 28px;">
     <span style="font-size: 20px; font-weight: bold; color: white;">INTEGRATION</span>
@@ -90,7 +90,7 @@ const DEFAULTS: Record<EmailTemplateType, { subject: string; body_html: string }
     <p style="color: #64748B; margin-top: 24px;">
       Best regards,<br/>
       <strong>{{rep_name}}</strong><br/>
-      Integration One
+      IntegrationOne
     </p>
   </div>
   {{footer}}
@@ -128,7 +128,7 @@ const DEFAULTS: Record<EmailTemplateType, { subject: string; body_html: string }
     <p style="color: #64748B; margin-top: 24px;">
       Best regards,<br/>
       <strong>{{rep_name}}</strong><br/>
-      Integration One
+      IntegrationOne
     </p>
   </div>
   {{footer}}
@@ -165,7 +165,7 @@ const DEFAULTS: Record<EmailTemplateType, { subject: string; body_html: string }
     <p style="color: #64748B; margin-top: 24px;">
       Best regards,<br/>
       <strong>{{rep_name}}</strong><br/>
-      Integration One
+      IntegrationOne
     </p>
   </div>
   {{footer}}
@@ -205,7 +205,7 @@ export async function renderTemplate(
   if (result.includes('{{footer}}')) {
     const settings = await getCompanySettings()
     const footer = `<div style="background: #F8FAFC; padding: 16px 28px; border-top: 1px solid #E2E8F0;">
-      <p style="color: #94A3B8; font-size: 12px; margin: 0;">Integration One · integrationone.net${settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''}${settings.phone ? ` · ${settings.phone}` : ''}</p>
+      <p style="color: #94A3B8; font-size: 12px; margin: 0;">IntegrationOne · integrationone.net${settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''}${settings.phone ? ` · ${settings.phone}` : ''}</p>
       ${settings.teams_link ? `<p style="margin: 6px 0 0;"><a href="${settings.teams_link}" style="color: #06B6D4; font-size: 12px;">Schedule a Teams call</a></p>` : ''}
     </div>`
     result = result.replaceAll('{{footer}}', footer)

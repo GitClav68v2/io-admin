@@ -33,7 +33,7 @@ const SECTIONS: LineSection[] = ['cameras', 'network', 'hardware', 'labor', 'oth
 
 function uid() { return Math.random().toString(36).slice(2) }
 
-const DEFAULT_SCOPE = `Integration One proposes to design and coordinate the installation of a complete perimeter security system for [Client Name] located at [Job Site Address]. The system will consist of [X] high-definition IP cameras covering [describe areas], connected to a centrally-managed NVR. Live monitoring will be provided via Deep Sentinel with real-time alerts and 24/7 professional response.`
+const DEFAULT_SCOPE = `IntegrationOne proposes to design and coordinate the installation of a complete perimeter security system for [Client Name] located at [Job Site Address]. The system will consist of [X] high-definition IP cameras covering [describe areas], connected to a centrally-managed NVR. Live monitoring will be provided via Deep Sentinel with real-time alerts and 24/7 professional response.`
 
 const DEFAULT_ASSUMPTIONS = `• Existing electrical outlets (110V) are within 10 ft of each camera mounting location.
 • Adequate internet service is available on-site (minimum 25 Mbps upload).
@@ -41,7 +41,7 @@ const DEFAULT_ASSUMPTIONS = `• Existing electrical outlets (110V) are within 1
 • Walls and ceilings are accessible for cable routing.
 • Patching and painting after cable installation is the client's responsibility.`
 
-const DEFAULT_EXCLUSIONS = `• Permit fees (if required) — obtained by Integration One, billed at cost
+const DEFAULT_EXCLUSIONS = `• Permit fees (if required) — obtained by IntegrationOne, billed at cost
 • High-voltage electrical work — by licensed electrician
 • Underground conduit trenching (unless listed in line items)
 • Painting or cosmetic finish work
@@ -818,7 +818,7 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
                   <option value="This proposal is conditional upon final site inspection. Pricing is subject to adjustment based on actual site conditions found during inspection.">
                     Short — pricing subject to adjustment
                   </option>
-                  <option value="This proposal is conditional upon a final site inspection by an Integration One technician. Equipment quantities, cable routing paths, and labor hours may be revised following the inspection. A revised proposal will be issued prior to project commencement.">
+                  <option value="This proposal is conditional upon a final site inspection by an IntegrationOne technician. Equipment quantities, cable routing paths, and labor hours may be revised following the inspection. A revised proposal will be issued prior to project commencement.">
                     Standard — revised proposal before commencement
                   </option>
                   <option value="Pricing reflects a preliminary assessment only. Final pricing will be confirmed after an on-site walkthrough and is subject to change based on conditions discovered during inspection.">

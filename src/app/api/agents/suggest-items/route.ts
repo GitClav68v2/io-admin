@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       max_tokens: 2048,
       messages: [{
         role: 'user',
-        content: `You are a proposal assistant for Integration One, a commercial security camera installation company in California.
+        content: `You are a proposal assistant for IntegrationOne, a commercial security camera installation company in California.
 
 Available catalog items:
 ${catalogLines}

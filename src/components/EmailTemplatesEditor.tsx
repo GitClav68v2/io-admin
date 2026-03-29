@@ -24,7 +24,7 @@ const SAMPLE_VARS: Record<string, string> = {
   amount_paid: '$6,250.00',
   rep_name: 'David Clavadetscher',
   company_phone: '(949) 233-1833',
-  footer: '<div style="background:#F8FAFC;padding:16px 28px;border-top:1px solid #E2E8F0;"><p style="color:#94A3B8;font-size:12px;margin:0;">Integration One · integrationone.net</p></div>',
+  footer: '<div style="background:#F8FAFC;padding:16px 28px;border-top:1px solid #E2E8F0;"><p style="color:#94A3B8;font-size:12px;margin:0;">IntegrationOne · integrationone.net</p></div>',
 }
 
 export default function EmailTemplatesEditor({ templates }: { templates: EmailTemplate[] }) {

@@ -39,12 +39,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     invoice_number: invoice.invoice_number,
     due_date: invoice.due_date || 'Upon receipt',
     balance_due: fmt(invoice.balance_due),
-    rep_name: invoice.rep_name || 'The Integration One Team',
+    rep_name: invoice.rep_name || 'The IntegrationOne Team',
     company_phone: settings.phone || '(949) 233-1833',
   }
 
   const { error } = await resend.emails.send({
-    from: 'Integration One <info@integrationone.net>',
+    from: 'IntegrationOne <info@integrationone.net>',
     to: invoice.bill_to_email,
     cc: 'info@integrationone.net',
     subject: await renderTemplate(template.subject, vars),

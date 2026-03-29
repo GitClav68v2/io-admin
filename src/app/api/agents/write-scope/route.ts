@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       max_tokens: 1024,
       messages: [{
         role: 'user',
-        content: `You are writing a professional security camera installation proposal for Integration One, a California-based commercial security integrator.
+        content: `You are writing a professional security camera installation proposal for IntegrationOne, a California-based commercial security integrator.
 
 Client: ${clientName || 'the client'}
 Site: ${siteAddress || 'the job site'}

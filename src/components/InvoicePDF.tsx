@@ -69,7 +69,12 @@ export default function InvoicePDF({ invoice, settings }: { invoice: Invoice; se
           </View>
           <View style={s.docBlock}>
             <Text style={s.docTitle}>INVOICE</Text>
-            {[['Invoice #:', invoice.invoice_number], ['Date:', fmtDate(invoice.issue_date)], ['Due:', fmtDate(invoice.due_date)]].map(([l,v]) => (
+            {[
+              ['Invoice #:', invoice.invoice_number],
+              ['Date:', fmtDate(invoice.issue_date)],
+              ['Due:', fmtDate(invoice.due_date)],
+              ...(invoice.rep_name ? [['Prepared by:', invoice.rep_name]] : []),
+            ].map(([l,v]) => (
               <View key={l} style={s.metaRow}><Text style={s.metaLabel}>{l}</Text><Text style={s.metaVal}>{v}</Text></View>
             ))}
             {settings.license_number ? <Text style={[s.metaVal, { fontSize: 7, color: GRAY, marginTop: 4 }]}>CA Lic. #{settings.license_number}</Text> : null}
@@ -130,7 +135,7 @@ export default function InvoicePDF({ invoice, settings }: { invoice: Invoice; se
         </View>
 
         <View style={s.footer}>
-          <Text style={s.footText}>IntegrationOne{settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''} · www.IntegrationOne.net</Text>
+          <Text style={s.footText}>IntegrationOne{settings.license_number ? `  ·  CA Lic. #${settings.license_number}` : ''}  ·  www.IntegrationOne.net  ·  info@integrationone.net{settings.phone ? `  ·  ${settings.phone}` : ''}</Text>
           <Text style={s.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

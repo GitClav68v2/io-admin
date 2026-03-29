@@ -42,12 +42,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       grand_total: fmt(proposal.grand_total),
       monthly_recurring: proposal.monthly_recurring > 0 ? fmt(proposal.monthly_recurring) : '',
       valid_days: String(proposal.valid_days),
-      rep_name: proposal.rep_name || 'The Integration One Team',
+      rep_name: proposal.rep_name || 'The IntegrationOne Team',
       company_phone: settings.phone || '(949) 233-1833',
     }
 
     const { error } = await resend.emails.send({
-      from: 'Integration One <info@integrationone.net>',
+      from: 'IntegrationOne <info@integrationone.net>',
       to: proposal.bill_to_email,
       cc: 'info@integrationone.net',
       subject: await renderTemplate(template.subject, vars),
