@@ -18,10 +18,12 @@ export default function PromoManager({ initialPromos }: { initialPromos: PromoCo
   const supabase = createClient()
   const [promos, setPromos]     = useState(initialPromos)
   const [showForm, setShowForm] = useState(false)
+  const [editing, setEditing]   = useState<PromoCode | null>(null)
   const [form, setForm]         = useState<Partial<PromoCode>>(blank())
   const [saving, setSaving]     = useState(false)
 
-  function openNew() { setForm(blank()); setShowForm(true) }
+  function openNew() { setForm(blank()); setEditing(null); setShowForm(true) }
+  function openEdit(p: PromoCode) { setForm(p); setEditing(p); setShowForm(true) }
 
   async function handleSave() {
     if (!form.code?.trim()) return
@@ -34,8 +36,13 @@ export default function PromoManager({ initialPromos }: { initialPromos: PromoCo
       max_uses:    form.max_uses || null,
       active:      form.active ?? true,
     }
-    const { data } = await supabase.from('promo_codes').insert(payload).select().single()
-    if (data) setPromos(prev => [data, ...prev])
+    if (editing) {
+      const { data } = await supabase.from('promo_codes').update(payload).eq('id', editing.id).select().single()
+      if (data) setPromos(prev => prev.map(p => p.id === data.id ? data : p))
+    } else {
+      const { data } = await supabase.from('promo_codes').insert(payload).select().single()
+      if (data) setPromos(prev => [data, ...prev])
+    }
     setSaving(false)
     setShowForm(false)
   }
@@ -64,7 +71,7 @@ export default function PromoManager({ initialPromos }: { initialPromos: PromoCo
         <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-16 z-50 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 mb-8">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="font-semibold text-slate-900">New Promo Code</h2>
+              <h2 className="font-semibold text-slate-900">{editing ? 'Edit Promo Code' : 'New Promo Code'}</h2>
               <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-4">
@@ -127,15 +134,25 @@ export default function PromoManager({ initialPromos }: { initialPromos: PromoCo
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
-              <button onClick={() => setShowForm(false)}
-                className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleSave} disabled={saving || !form.code?.trim()}
-                className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                <Save size={14} /> {saving ? 'Saving…' : 'Create Promo'}
-              </button>
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
+              <div>
+                {editing && (
+                  <button onClick={() => { toggleActive(editing); setShowForm(false) }}
+                    className="text-xs text-red-500 hover:text-red-600 font-medium">
+                    {editing.active ? 'Deactivate' : 'Activate'}
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setShowForm(false)}
+                  className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleSave} disabled={saving || !form.code?.trim()}
+                  className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                  <Save size={14} /> {saving ? 'Saving…' : editing ? 'Save' : 'Create Promo'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -146,15 +163,15 @@ export default function PromoManager({ initialPromos }: { initialPromos: PromoCo
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Code', 'Type', 'Value', 'Expiry', 'Uses', 'Active', ''].map(h => (
+              {['Code', 'Type', 'Value', 'Expiry', 'Uses', 'Active'].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {promos.map(p => (
-              <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-5 py-3 font-mono font-semibold text-slate-800">{p.code}</td>
+              <tr key={p.id} onClick={() => openEdit(p)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                <td className="px-5 py-3 font-mono font-semibold text-cyan-600">{p.code}</td>
                 <td className="px-5 py-3 text-slate-500 capitalize">{p.type}</td>
                 <td className="px-5 py-3 text-slate-700 font-medium">
                   {p.type === 'percentage' ? `${p.value}%` : formatCurrency(p.value)}
@@ -168,18 +185,10 @@ export default function PromoManager({ initialPromos }: { initialPromos: PromoCo
                     {p.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td className="px-5 py-3">
-                  <button
-                    onClick={() => toggleActive(p)}
-                    className="text-xs font-medium text-cyan-600 hover:underline"
-                  >
-                    {p.active ? 'Deactivate' : 'Activate'}
-                  </button>
-                </td>
               </tr>
             ))}
             {!promos.length && (
-              <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-400">No promo codes yet</td></tr>
+              <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No promo codes yet</td></tr>
             )}
           </tbody>
         </table>
