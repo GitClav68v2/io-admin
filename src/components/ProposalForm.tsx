@@ -429,7 +429,8 @@ export default function ProposalForm({ clients, catalog, proposal }: Props) {
     }
 
     setSaving(false)
-    router.push(`/proposals/${proposalId}`)
+    if (isEdit && status === 'draft') router.push('/proposals')
+    else router.push(`/proposals/${proposalId}`)
   }
 
   const catalogByCategory = catalog.reduce((acc, item) => {
