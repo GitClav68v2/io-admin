@@ -195,6 +195,7 @@ export interface Invoice {
   sent_at: string | null
   notes: string | null
   rep_name: string | null
+  recurring_invoice_id: string | null
   line_items?: InvoiceLineItem[]
   client?: Client
 }
@@ -231,6 +232,34 @@ export interface Prospect {
   lead_source: string | null
   notes: string | null
   status: ProspectStatus
+}
+
+export type EmailTemplateType = 'proposal_send' | 'invoice_send' | 'invoice_reminder' | 'payment_receipt'
+
+export interface EmailTemplate {
+  id: string
+  type: EmailTemplateType
+  subject: string
+  body_html: string
+  active: boolean
+  updated_at: string
+}
+
+export type RecurringFrequency = 'monthly' | 'quarterly' | 'annual'
+
+export interface RecurringInvoice {
+  id: string
+  created_at: string
+  template_invoice_id: string
+  client_id: string | null
+  frequency: RecurringFrequency
+  next_due_date: string
+  end_date: string | null
+  active: boolean
+  last_generated_at: string | null
+  notes: string | null
+  template_invoice?: Invoice
+  client?: Client
 }
 
 export interface CompanySettings {

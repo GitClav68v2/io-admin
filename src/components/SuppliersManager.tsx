@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Supplier } from '@/lib/types'
 import { Plus, X, Save } from 'lucide-react'
@@ -19,6 +19,19 @@ export default function SuppliersManager({ initialSuppliers }: { initialSupplier
   const [form, setForm]           = useState<Partial<Supplier>>(blank())
   const [saving, setSaving]       = useState(false)
   const [billingSame, setBillingSame] = useState(false)
+
+  // Re-insert tel: links so Google Voice extension picks them up
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(a => {
+        const parent = a.parentNode
+        if (!parent) return
+        const clone = a.cloneNode(true) as HTMLAnchorElement
+        parent.replaceChild(clone, a)
+      })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [suppliers])
 
   function openNew()  { setForm(blank()); setEditing(null); setBillingSame(false); setShowForm(true) }
   function openEdit(s: Supplier) {

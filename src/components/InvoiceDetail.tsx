@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Invoice } from '@/lib/types'
 import { formatCurrency, formatDate, STATUS_COLORS, SECTION_LABELS } from '@/lib/utils'
-import { FileDown, Send, CheckCircle, Loader2, Pencil, X, Save } from 'lucide-react'
+import { FileDown, Send, CheckCircle, Loader2, Pencil, X, Save, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
-export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
+export default function InvoiceDetail({ invoice, hasRecurring }: { invoice: Invoice; hasRecurring?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
@@ -40,6 +40,50 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
     rep_name: invoice.rep_name ?? '',
   })
   const [saving, setSaving] = useState(false)
+  const [showRecurring, setShowRecurring] = useState(false)
+  const [recurringForm, setRecurringForm] = useState({
+    frequency: 'monthly',
+    next_due_date: '',
+    end_date: '',
+    notes: '',
+  })
+  const [recurSaving, setRecurSaving] = useState(false)
+
+  async function handleMakeRecurring() {
+    setRecurSaving(true)
+    try {
+      const res = await fetch('/api/recurring/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoice_id: invoice.id,
+          frequency: recurringForm.frequency,
+          next_due_date: recurringForm.next_due_date,
+          end_date: recurringForm.end_date || null,
+          notes: recurringForm.notes || null,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setShowRecurring(false)
+        alert('Recurring schedule created!')
+        router.refresh()
+      } else {
+        alert(data.error || 'Something went wrong.')
+      }
+    } catch {
+      alert('Error creating recurring schedule.')
+    }
+    setRecurSaving(false)
+  }
+
+  function openRecurringModal() {
+    // Default next_due_date to one interval from issue_date
+    const d = new Date(invoice.issue_date + 'T00:00:00')
+    d.setMonth(d.getMonth() + 1)
+    setRecurringForm(f => ({ ...f, next_due_date: d.toISOString().split('T')[0] }))
+    setShowRecurring(true)
+  }
 
   function fmtPhone(val: string) {
     const d = val.replace(/\D/g, '').slice(0, 10)
@@ -122,6 +166,11 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${STATUS_COLORS[invoice.status]}`}>
               {invoice.status}
             </span>
+            {hasRecurring && (
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-purple-100 text-purple-700 flex items-center gap-1">
+                <RefreshCw size={10} /> Recurring
+              </span>
+            )}
           </div>
           <p className="text-slate-400 text-sm">
             {invoice.invoice_number} · Issued {formatDate(invoice.issue_date)}
@@ -141,6 +190,12 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
             <button onClick={handleSend} disabled={!!loading}
               className="flex items-center gap-2 bg-blue-500 hover:bg-blue-400 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
               {loading === 'send' ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} Email Invoice
+            </button>
+          )}
+          {!hasRecurring && (
+            <button onClick={openRecurringModal}
+              className="flex items-center gap-2 border border-purple-300 hover:bg-purple-50 text-purple-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+              <RefreshCw size={14} /> Make Recurring
             </button>
           )}
         </div>
@@ -223,6 +278,58 @@ export default function InvoiceDetail({ invoice }: { invoice: Invoice }) {
               <button onClick={handleSaveEdit} disabled={saving}
                 className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
                 <Save size={14} /> {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recurring modal */}
+      {showRecurring && (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center pt-8 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="font-semibold text-slate-900">Make Recurring</h2>
+              <button onClick={() => setShowRecurring(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Frequency</label>
+                <select
+                  value={recurringForm.frequency}
+                  onChange={e => setRecurringForm(f => ({ ...f, frequency: e.target.value }))}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="annual">Annual</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Next Due Date</label>
+                <input type="date" value={recurringForm.next_due_date}
+                  onChange={e => setRecurringForm(f => ({ ...f, next_due_date: e.target.value }))}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">End Date <span className="text-slate-400 font-normal">(optional)</span></label>
+                <input type="date" value={recurringForm.end_date}
+                  onChange={e => setRecurringForm(f => ({ ...f, end_date: e.target.value }))}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+                <textarea value={recurringForm.notes}
+                  onChange={e => setRecurringForm(f => ({ ...f, notes: e.target.value }))}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 min-h-[60px]"
+                  placeholder="e.g., Monthly monitoring service" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
+              <button onClick={() => setShowRecurring(false)} className="border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancel</button>
+              <button onClick={handleMakeRecurring} disabled={recurSaving || !recurringForm.next_due_date}
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+                <RefreshCw size={14} /> {recurSaving ? 'Creating…' : 'Create Schedule'}
               </button>
             </div>
           </div>

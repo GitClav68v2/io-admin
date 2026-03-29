@@ -6,6 +6,7 @@ import { createElement, type ReactElement, type JSXElementConstructor } from 're
 import ProposalPDF from '@/components/ProposalPDF'
 import { requireAuth } from '@/lib/api-auth'
 import { getCompanySettings } from '@/lib/settings'
+import { getEmailTemplate, renderTemplate } from '@/lib/email-templates'
 
 export const maxDuration = 60
 
@@ -32,68 +33,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const settings = await getCompanySettings()
     const buffer = await renderToBuffer(createElement(ProposalPDF, { proposal, settings }) as ReactElement<DocumentProps, string | JSXElementConstructor<any>>)
 
-    const clientName = proposal.bill_to_company || proposal.bill_to_name || 'there'
     const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+    const template = await getEmailTemplate('proposal_send')
+    const vars = {
+      client_name: proposal.bill_to_company || proposal.bill_to_name || 'there',
+      proposal_number: proposal.proposal_number,
+      project_name: proposal.project_name || proposal.title,
+      grand_total: fmt(proposal.grand_total),
+      monthly_recurring: proposal.monthly_recurring > 0 ? fmt(proposal.monthly_recurring) : '',
+      valid_days: String(proposal.valid_days),
+      rep_name: proposal.rep_name || 'The Integration One Team',
+      company_phone: settings.phone || '(949) 233-1833',
+    }
 
     const { error } = await resend.emails.send({
       from: 'Integration One <info@integrationone.net>',
       to: proposal.bill_to_email,
       cc: 'info@integrationone.net',
-      subject: `Your Proposal from Integration One — ${proposal.proposal_number}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; color: #0F172A;">
-          <div style="background: #0F172A; padding: 24px 28px;">
-            <span style="font-size: 20px; font-weight: bold; color: white;">INTEGRATION</span>
-            <span style="font-size: 20px; font-weight: bold; color: #06B6D4;">ONE</span>
-          </div>
-          <div style="padding: 32px 28px;">
-            <h2 style="color: #0F172A; margin: 0 0 16px;">Hi ${clientName},</h2>
-            <p style="color: #64748B; line-height: 1.7;">
-              Thank you for the opportunity to put together a security proposal for you.
-              Please find your proposal attached as a PDF — <strong>${proposal.proposal_number}</strong>.
-            </p>
-            <div style="background: #F1F5F9; border-radius: 8px; padding: 20px; margin: 24px 0;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span style="color: #64748B;">Proposal</span>
-                <strong>${proposal.proposal_number}</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span style="color: #64748B;">Project</span>
-                <strong>${proposal.project_name || proposal.title}</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between; border-top: 1px solid #E2E8F0; padding-top: 12px; margin-top: 12px;">
-                <span style="color: #64748B;">One-Time Total</span>
-                <strong style="color: #06B6D4; font-size: 18px;">${fmt(proposal.grand_total)}</strong>
-              </div>
-              ${proposal.monthly_recurring > 0 ? `<div style="display: flex; justify-content: space-between; margin-top: 6px;">
-                <span style="color: #64748B; font-size: 13px;">Monthly Recurring (separate)</span>
-                <span style="font-size: 13px;">${fmt(proposal.monthly_recurring)}/mo</span>
-              </div>` : ''}
-            </div>
-            <p style="color: #64748B; line-height: 1.7;">
-              This proposal is valid for <strong>${proposal.valid_days} days</strong>.
-              To accept, simply sign the proposal and return it to us, or reply to this email.
-              We'll take care of the rest.
-            </p>
-            <p style="color: #64748B; line-height: 1.7;">
-              Questions? Reply to this email or call us at <strong>(949) 233-1833</strong>.
-              We're happy to walk you through anything.
-            </p>
-            <p style="color: #64748B; margin-top: 24px;">
-              Best regards,<br/>
-              <strong>${proposal.rep_name || 'The Integration One Team'}</strong><br/>
-              Integration One<br/>
-              <a href="https://www.integrationone.net" style="color: #06B6D4;">integrationone.net</a>
-            </p>
-          </div>
-          <div style="background: #F8FAFC; padding: 16px 28px; border-top: 1px solid #E2E8F0;">
-            <p style="color: #94A3B8; font-size: 12px; margin: 0;">
-              Integration One · integrationone.net${settings.license_number ? ` · CA Lic. #${settings.license_number}` : ''}${settings.phone ? ` · ${settings.phone}` : ''}
-            </p>
-            ${settings.teams_link ? `<p style="margin: 6px 0 0;"><a href="${settings.teams_link}" style="color: #06B6D4; font-size: 12px;">Schedule a Teams call</a></p>` : ''}
-          </div>
-        </div>
-      `,
+      subject: await renderTemplate(template.subject, vars),
+      html: await renderTemplate(template.body_html, vars),
       attachments: [{
         filename: `${proposal.proposal_number}.pdf`,
         content: Buffer.from(buffer).toString('base64'),
